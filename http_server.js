@@ -33,7 +33,7 @@ var httpServerUtils = {
 
     path : function(url) {
         var pathname = require('url').parse(url).pathname
-        return '/' == pathname ? 'home.html' : pathname.match(/\/(.+)/)[1]
+        return '/' == pathname ? 'index.html' : pathname.match(/\/(.+)/)[1]
     }
 
 };
