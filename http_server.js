@@ -1,8 +1,10 @@
 var CONTENT_TYPE = {
     PLAIN : 'text/plain',
     HTML : 'text/html',
+    CSS : 'text/css',
     MPEG : 'audio/mpeg',
-    PNG : 'image/png'
+    PNG : 'image/png',
+    JS : 'application/x-javascript'
 };
 
 var STATUS_CODE = {
@@ -13,8 +15,9 @@ var STATUS_CODE = {
 
 var httpServerUtils = {
     CONTENT_TYPE_MAPPING : {
-        js : CONTENT_TYPE.PLAIN,
+        js : CONTENT_TYPE.JS,
         html : CONTENT_TYPE.HTML,
+        css : CONTENT_TYPE.CSS,
         mp3 : CONTENT_TYPE.MPEG,
         png : CONTENT_TYPE.PNG
     },

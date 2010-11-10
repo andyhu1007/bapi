@@ -1,0 +1,21 @@
+body {
+    font-family: "Lucida Grande", Verdana;
+}
+
+.wrapper {
+    margin: 0 auto;
+    width: 600px;
+    border-radius: 6px;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border: 1px solid #999;
+    -webkit-box-shadow: 2px 2px 2px 2px #ddd;
+    -moz-box-shadow: 2px 2px 2px 2px #ddd;
+    padding: 20px;
+}
+
+footer {
+    color: #ccc;
+    margin-top: 10px;
+    border-top: 1px dashed #ccc;
+}
