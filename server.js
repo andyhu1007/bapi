@@ -1,43 +1,61 @@
 var server = function(hostname, port) {
-    this.start(hostname, port);    
+    this.start(hostname, port);
 }
 
 server.prototype.CONTENT_TYPE = {
-    js : 'text/plain',
-    html : 'text/html',
-    mp3 : 'audio/mpeg'
+    PLAIN : 'text/plain',
+    HTML : 'text/html',
+    MPEG : 'audio/mpeg'
 }
 
-server.prototype.render = function(file, res) {
+server.prototype.STATUS_CODE = {
+    NOT_FOUND : 404,
+    SERVER_ERROR : 500
+}
+
+server.prototype._contentType = function(file) {
+    var CONTENT_TYPES = {
+        js : this.CONTENT_TYPE.PLAIN,
+        html : this.CONTENT_TYPE.HTML,
+        mp3 : this.CONTENT_TYPE.MPEG
+    }
+    var fileSuffix = file.match(/.+\.(\w+)/)[1];
+    return eval("CONTENT_TYPES." + fileSuffix);
+}
+
+server.prototype._statusCode = function(err) {
+    var fileNotFound = err.message.indexOf('No such file or directory') >= 0;
+    return {
+        code: fileNotFound ? this.STATUS_CODE.NOT_FOUND : this.STATUS_CODE.SERVER_ERROR,
+        msg: fileNotFound ? 'No page found!' : 'Server error!'
+    }
+}
+
+server.prototype._render = function(file, res) {
     var self = this;
     require('fs').readFile(file, function (err, data) {
-        console.log("rendering " + file);
+        console.log("get the request for " + file);
         if (err) {
-            self.handleError(res, err);
+            self._error(res, err);
         } else {
-            self.handle(res, file, data)
+            self._response(res, file, data)
         }
     });
 };
 
-server.prototype.handle = function(res, file, data) {
-    var fileSuffix = file.match(/.+\.(\w+)/)[1];
-    res.writeHead(200, {'Content-Type': eval("this.CONTENT_TYPE." + fileSuffix), 'Content-Length' : data.length});
+server.prototype._response = function(res, file, data) {
+    res.writeHead(200, {'Content-Type': this._contentType(file), 'Content-Length' : data.length});
     res.end(data);
 }
 
-server.prototype.handleError = function(res, err) {
-    if (err.message.indexOf('No such file or directory') >= 0) {
-        res.writeHead(404, {'Content-Type': 'text/plain'});
-        res.end('No page found!');
-    } else {
-        res.writeHead(500, {'Content-Type': 'text/plain'});
-        res.end('Server error!');
-    }
-    console.log(err.message);
+server.prototype._error = function(res, err) {
+    var status = this._statusCode(err);
+    res.writeHead(status.code, {'Content-Type': this.CONTENT_TYPE.PLAIN});
+    res.end(status.msg);
+    console.log(err);
 }
 
-server.prototype.mapToFile = function(url) {
+server.prototype._pathToFile = function(url) {
     var pathname = require('url').parse(url).pathname
     return '/' == pathname ? 'home.html' : pathname.match(/\/(.+)/)[1]
 }
@@ -45,7 +63,7 @@ server.prototype.mapToFile = function(url) {
 server.prototype.start = function(hostname, port) {
     var self = this;
     require('http').createServer(function (req, res) {
-        self.render(self.mapToFile(req.url), res);
+        self._render(self._pathToFile(req.url), res);
     }).listen(port, hostname);
     console.log('Server running at http://' + hostname + ':' + port + '/');
 };
