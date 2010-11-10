@@ -1,34 +1,50 @@
-var httpServer = function(hostname, port) {
-    this.start(hostname, port);
-}
-
-httpServer.prototype.CONTENT_TYPE = {
+var CONTENT_TYPE = {
     PLAIN : 'text/plain',
     HTML : 'text/html',
     MPEG : 'audio/mpeg'
-}
+};
 
-httpServer.prototype.STATUS_CODE = {
+var STATUS_CODE = {
     NOT_FOUND : 404,
-    httpServer_ERROR : 500
+    SERVER_ERROR : 500
+};
+
+var httpServerUtils = {
+    CONTENT_TYPE_MAPPING : {
+        js : CONTENT_TYPE.PLAIN,
+        html : CONTENT_TYPE.HTML,
+        mp3 : CONTENT_TYPE.MPEG
+    },
+
+    contentType : function(file) {
+        return eval("this.CONTENT_TYPE_MAPPING." + file.match(/.+\.(\w+)/)[1]);
+    },
+
+    statusCode : function(err) {
+        var fileNotFound = err.message.indexOf('No such file or directory') >= 0;
+        return {
+            code: fileNotFound ? STATUS_CODE.NOT_FOUND : STATUS_CODE.SERVER_ERROR,
+            msg: fileNotFound ? 'No page found!' : 'httpServer error!'
+        }
+    }
+
+};
+
+var httpServer = function(hostname, port) {
+    this.utils = httpServerUtils;
+    this.start(hostname, port);
 }
 
-httpServer.prototype._contentType = function(file) {
-    var CONTENT_TYPES = {
-        js : this.CONTENT_TYPE.PLAIN,
-        html : this.CONTENT_TYPE.HTML,
-        mp3 : this.CONTENT_TYPE.MPEG
-    }
-    var fileSuffix = file.match(/.+\.(\w+)/)[1];
-    return eval("CONTENT_TYPES." + fileSuffix);
+httpServer.prototype._response = function(res, file, data) {
+    res.writeHead(200, {'Content-Type': this.utils.contentType(file), 'Content-Length' : data.length});
+    res.end(data);
 }
 
-httpServer.prototype._statusCode = function(err) {
-    var fileNotFound = err.message.indexOf('No such file or directory') >= 0;
-    return {
-        code: fileNotFound ? this.STATUS_CODE.NOT_FOUND : this.STATUS_CODE.httpServer_ERROR,
-        msg: fileNotFound ? 'No page found!' : 'httpServer error!'
-    }
+httpServer.prototype._error = function(res, err) {
+    var status = this.utils.statusCode(err);
+    res.writeHead(status.code, {'Content-Type': CONTENT_TYPE.PLAIN});
+    res.end(status.msg);
+    console.log(err);
 }
 
 httpServer.prototype._render = function(file, res) {
@@ -42,18 +58,6 @@ httpServer.prototype._render = function(file, res) {
         }
     });
 };
-
-httpServer.prototype._response = function(res, file, data) {
-    res.writeHead(200, {'Content-Type': this._contentType(file), 'Content-Length' : data.length});
-    res.end(data);
-}
-
-httpServer.prototype._error = function(res, err) {
-    var status = this._statusCode(err);
-    res.writeHead(status.code, {'Content-Type': this.CONTENT_TYPE.PLAIN});
-    res.end(status.msg);
-    console.log(err);
-}
 
 httpServer.prototype._pathToFile = function(url) {
     var pathname = require('url').parse(url).pathname
