@@ -1,7 +1,8 @@
 var CONTENT_TYPE = {
     PLAIN : 'text/plain',
     HTML : 'text/html',
-    MPEG : 'audio/mpeg'
+    MPEG : 'audio/mpeg',
+    PNG : 'image/png'
 };
 
 var STATUS_CODE = {
@@ -14,7 +15,8 @@ var httpServerUtils = {
     CONTENT_TYPE_MAPPING : {
         js : CONTENT_TYPE.PLAIN,
         html : CONTENT_TYPE.HTML,
-        mp3 : CONTENT_TYPE.MPEG
+        mp3 : CONTENT_TYPE.MPEG,
+        png : CONTENT_TYPE.PNG
     },
 
     contentType : function(file) {
