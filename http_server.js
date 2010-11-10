@@ -5,6 +5,7 @@ var CONTENT_TYPE = {
 };
 
 var STATUS_CODE = {
+    OK : 200,
     NOT_FOUND : 404,
     SERVER_ERROR : 500
 };
@@ -26,6 +27,11 @@ var httpServerUtils = {
             code: fileNotFound ? STATUS_CODE.NOT_FOUND : STATUS_CODE.SERVER_ERROR,
             msg: fileNotFound ? 'No page found!' : 'httpServer error!'
         }
+    },
+
+    path : function(url) {
+        var pathname = require('url').parse(url).pathname
+        return '/' == pathname ? 'home.html' : pathname.match(/\/(.+)/)[1]
     }
 
 };
@@ -36,7 +42,7 @@ var httpServer = function(hostname, port) {
 }
 
 httpServer.prototype._response = function(res, file, data) {
-    res.writeHead(200, {'Content-Type': this.utils.contentType(file), 'Content-Length' : data.length});
+    res.writeHead(STATUS_CODE.OK, {'Content-Type': this.utils.contentType(file), 'Content-Length' : data.length});
     res.end(data);
 }
 
@@ -47,7 +53,7 @@ httpServer.prototype._error = function(res, err) {
     console.log(err);
 }
 
-httpServer.prototype._render = function(file, res) {
+httpServer.prototype.render = function(file, res) {
     var self = this;
     require('fs').readFile(file, function (err, data) {
         console.log("get the request for " + file);
@@ -59,15 +65,10 @@ httpServer.prototype._render = function(file, res) {
     });
 };
 
-httpServer.prototype._pathToFile = function(url) {
-    var pathname = require('url').parse(url).pathname
-    return '/' == pathname ? 'home.html' : pathname.match(/\/(.+)/)[1]
-}
-
 httpServer.prototype.start = function(hostname, port) {
     var self = this;
     require('http').createServer(function (req, res) {
-        self._render(self._pathToFile(req.url), res);
+        self.render(self.utils.path(req.url), res);
     }).listen(port, hostname);
     console.log('httpServer running at http://' + hostname + ':' + port + '/');
 };
