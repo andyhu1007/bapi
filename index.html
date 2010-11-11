@@ -4,29 +4,40 @@
     <title>Bapi - Todo List</title>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=620"/>
+    <link href="img/favicon.ico" ref="shortcut icon"/>
     <link href="css/bapi.css" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="js/jquery-1.4.3.min.js"></script>
+    <script type="text/javascript" src="js/bapi.js"></script>
 </head>
 
 <body>
 
-<section class="wrapper">
+<article id="bapi">
 
-    <header>
-        <img src="img/banner.png"/>
-        <hgroup>
-            <h3>Bapi - The coolest todo list in the world</h3>
-        </hgroup>
+    <header class="horizontal">
+        <img id="logo" src="img/logo.png"/>
+        <h3 id="title">Bapi - The coolest todo list in the world</h3>
     </header>
 
-    <article>
+    <article id="notification">
+        <p class="warning"></p>
+    </article>
 
+    <article id="tasks">
+        <ul>
+
+        </ul>
+    </article>
+
+    <article class="new-task">
+        <input type="text" maxlength="40" placeholder="Enter a new task here"/>
     </article>
 
     <footer>
         <p>Andy Hu - andyhu1007@gmail.com, twitter: andyhu1007</p>
     </footer>
 
-</section>
+</article>
 
 
 </body>
