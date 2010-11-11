@@ -1,36 +1,45 @@
 var bapi = function() {
     var db = null,
-            warning = document.querySelector("article#notification .warning"),
-            newtask = document.querySelector("article#newtask #new");
+            warning = $("article#notification .warning"),
+            newtask = $("article#newtask #new"),
+            tasks = $("article#tasks > ul");
 
-    function initDb() {
+    function initDB() {
         if (window.openDatabase) {
             db = openDatabase("bapi", "", "Bapi Todo List", 2 * 1024 * 1024);
             db.transaction(function(tx) {
                 tx.executeSql("DROP TABLE tasks", []);  // to be deleted
-                tx.executeSql("CREATE TABLE IF NOT EXISTS tasks (id INTEGER NOT NULL PRIMARY KEY, description TEXT NOT NULL)", []);
+                tx.executeSql("CREATE TABLE IF NOT EXISTS tasks (id INTEGER NOT NULL PRIMARY KEY, desc TEXT NOT NULL)", []);
             });
         } else {
-            warning.innerHTML = 'Web Databases not supported';
+            warning.html('Web Databases not supported');
         }
     }
 
-    function refreshList() {
-        alert("one task added");
+    function refreshTasks() {
+        db.transaction(function(tx) {
+            tasks.html("");
+            tx.executeSql("SELECT * FROM tasks", [], function(tx, results){
+                for (var i = 0; i < results.rows.length; i++) {
+                    var task = results.rows.item(i);
+                    $("<li></li>").text(task['desc']).appendTo(tasks);
+                }
+            });
+        });
     }
 
     function saveTask() {
         db.transaction(function(tx) {
-            tx.executeSql("INSERT INTO tasks (description) VALUES (?)", [$(newtask).val()], function(tx, results) {
-                refreshList();
+            tx.executeSql("INSERT INTO tasks (desc) VALUES (?)", [$(newtask).val()], function(tx, results) {
+                refreshTasks();
             }, function(tx, e) {
-                warning.innerHTML = e.message;
+                warning.html(e.message);
             });
         });
     }
 
     function initBehaviors() {
-        $(newtask).keyup(function(evt) {
+        $(newtask).keydown(function(evt) {
             if (13 == evt.keyCode) {
                 saveTask();
             }
@@ -38,13 +47,13 @@ var bapi = function() {
     }
 
     function init() {
-        initDb();
+        initDB();
         initBehaviors();
     }
 
     return {init: init};
 };
 
-$(function(){
+$(function() {
     bapi().init();
 });
