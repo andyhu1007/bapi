@@ -2,7 +2,8 @@ var bapi = function() {
     var db = null,
             warning = $("article#notification .warning"),
             newtask = $("article#newtask #new"),
-            tasks = $("article#tasks > ul");
+            taskList = $("article#tasks > ul"),
+            tasks = $("article#tasks li");
 
     function initDB() {
         if (window.openDatabase) {
@@ -16,13 +17,17 @@ var bapi = function() {
         }
     }
 
-    function refreshTasks() {
+    function refresh() {
+        function compose(task){
+            return $("<li></li>").text(task['desc']).append("<span>X</span>");
+        }
+
         db.transaction(function(tx) {
-            tasks.html("");
-            tx.executeSql("SELECT * FROM tasks", [], function(tx, results){
+            taskList.html("");
+            tx.executeSql("SELECT * FROM tasks", [], function(tx, results) {
                 for (var i = 0; i < results.rows.length; i++) {
                     var task = results.rows.item(i);
-                    $("<li></li>").text(task['desc']).appendTo(tasks);
+                    compose(task).appendTo(taskList);
                 }
             });
         });
@@ -31,7 +36,7 @@ var bapi = function() {
     function saveTask() {
         db.transaction(function(tx) {
             tx.executeSql("INSERT INTO tasks (desc) VALUES (?)", [$(newtask).val()], function(tx, results) {
-                refreshTasks();
+                refresh();
             }, function(tx, e) {
                 warning.html(e.message);
             });
