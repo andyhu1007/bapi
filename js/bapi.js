@@ -1,4 +1,4 @@
-$(function bapi() {
+var bapi = function() {
     var db = null,
             warning = document.querySelector("article#notification .warning"),
             newtask = document.querySelector("article#newtask #new");
@@ -42,5 +42,9 @@ $(function bapi() {
         initBehaviors();
     }
 
-    init();
+    return {init: init};
+};
+
+$(function(){
+    bapi().init();
 });
