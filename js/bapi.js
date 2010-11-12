@@ -1,85 +1,96 @@
-var bapi = function() {
-    var warning = $("article#notification .warning"),
-            newtask = $("article#newtask #new"),
-            taskList = $("article#tasks > ul"),
-            tasks = $("article#tasks li"),
-            taskEditors = $("article#tasks input"),
-            newTasks = $("article#tasks .new"),
-            removeButtons = $("article#tasks .remove");
+var Bapi = function() {
 
-    function refresh() {
-        function clear() {
-            taskList.html("");
-        }
-
-        function compose(task) {
-            return $("<li class='new'></li>").
-                    attr("data-taskid", task['id']).
-                    append($("<span class='desc'></span>").text(task['desc'])).
-                    append("<span class='button remove'>X</span>").
-                    add($("<input type='text' style='display:none;'/>").
-                    val(task['desc']));
-        }
-
-        function list(tx, results) {
-            clear();
-            for (var i = 0; i < results.rows.length; i++) {
-                var task = results.rows.item(i);
-                compose(task).appendTo(taskList);
-            }
-        }
-
-        Task.where({}, list);
+    function Selector() {
+        this.warning = "article#notification .warning";
+        this.add = "article#newtask #new";
+        this.tasksArti = "article#tasks";
+        this.taskUL = this.tasksArti + " > ul";
+        this.taskLIs = this.tasksArti + " li";
+        this.taskEdis = this.tasksArti + " input";
+        this.taskRmBts = this.tasksArti + " .remove";
     }
 
-    function warning(tx, e) {
-        warning.html(e.message);
-    }
+    Selector.apply(this);
 
     function init() {
-        if (window.openDatabase) {
-            Task.dropTable();
-            Task.createTable();
-        } else {
-            warning.html('Web Databases not supported');
+        function dbWarning(tx, e) {
+            $(warning).html(e.message);
         }
 
-        $(newtask).keydown(function(evt) {
-            if (13 == evt.keyCode) {
-                Task.create({desc: $(newtask).val()}, refresh, warning);
+        function refresh() {
+            function _compose(task) {
+                return $("<li class='new'></li>").
+                        attr("data-taskid", task['id']).
+                        append($("<span class='desc'></span>").text(task['desc'])).
+                        append("<span class='button remove'>X</span>").
+                        add($("<input type='text' style='display:none;'/>").
+                        val(task['desc']));
             }
-        });
-        $(newtask).click(function(evt) {
-            $(this).select();
-        });
-        $(taskEditors).live('keydown', function(evt) {
-            if (13 == evt.keyCode) {
-                var taskEle = $(this).prev();
-                var task = new Task({id: taskEle.attr('data-taskid'), desc: taskEle.next().val()})
-                task.save(function(tx, results) {
-                    taskEle.children('.desc').text(taskEle.next().val());
-                    taskEle.next().hide();
-                }, warning);
+
+            function _refresh(tx, results) {
+                $(taskUL).html("");
+                for (var i = 0; i < results.rows.length; i++) {
+                    _compose(results.rows.item(i)).appendTo($(taskUL));
+                }
             }
-        });
-        tasks.live('dblclick', function(evt) {
-            $(this).next().show();
-            $(this).next().focus();
-            $(this).next().select();
-        });
-        tasks.live('click', function(evt) {
-            $(this).toggleClass('new done');
-        });
-        removeButtons.live('click', function(evt) {
-            var task = new Task({id: parseInt($(this).parent("li").attr('data-taskid'))});
-            var self = this;
-            task.destroy(function(){$(self).parent("li").remove();});
-        });
+
+            Task.where({}, _refresh);
+        }
+
+
+        (function initDB() {
+            if (window.openDatabase) {
+                Task.dropTable();
+                Task.createTable();
+            } else {
+                $(warning).html('Web Databases not supported');
+            }
+        })();
+
+        (function initUI() {
+            (function initCRUD() {
+                $(add).keydown(function(evt) {
+                    if (13 == evt.keyCode) {
+                        Task.create({desc: $(add).val()}, refresh, dbWarning);
+                    }
+                });
+
+                $(add).click(function(evt) {
+                    $(this).select();
+                });
+
+                $(taskLIs).live('dblclick', function(evt) {
+                    $(this).next().show().focus().select();
+                });
+                $(taskLIs).live('click', function(evt) {
+                    $(this).toggleClass('new done');
+                });
+                $(taskRmBts).live('click', function(evt) {
+                    var self = this;
+                    var taskEle = $(self).parent();
+                    var task = new Task({id: taskEle.attr('data-taskid')});
+                    task.destroy(function() {
+                        taskEle.remove();
+                    });
+                }, dbWarning);
+
+                $(taskEdis).live('keydown', function(evt) {
+                    if (13 == evt.keyCode) {
+                        var taskEle = $(this).prev();
+                        new Task({id: taskEle.attr('data-taskid'), desc: taskEle.next().val()}).save(function(tx, results) {
+                            taskEle.children('.desc').text(taskEle.next().val());
+                            taskEle.next().hide();
+                        }, dbWarning);
+                    }
+                });
+            })();
+        })();
+
     }
 
     return {init: init};
 };
 
 $(function() {
-    bapi().init();
+    Bapi().init();
 });
