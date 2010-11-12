@@ -28,6 +28,20 @@ article#bapi #notification {
     color: red;
 }
 
+#tasks .clickable {
+    cursor: pointer;
+    margin-left: 100px;
+}
+
+#tasks .clickable:hover {
+    background: gray;
+}
+
+#tasks .done {
+    color: rgba(0, 0, 0, 0.296875);
+    text-decoration: line-through;
+}
+
 footer {
     color: #ccc;
     margin-top: 10px;

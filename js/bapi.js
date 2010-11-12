@@ -3,7 +3,8 @@ var bapi = function() {
             warning = $("article#notification .warning"),
             newtask = $("article#newtask #new"),
             taskList = $("article#tasks > ul"),
-            tasks = $("article#tasks li");
+            tasks = $("article#tasks li"),
+            newTasks = $("article#tasks .new");
 
     function initDB() {
         if (window.openDatabase) {
@@ -18,8 +19,15 @@ var bapi = function() {
     }
 
     function refresh() {
-        function compose(task){
-            return $("<li></li>").text(task['desc']).append("<span>X</span>");
+        function compose(task) {
+            return $("<li class='new'></li>").text(task['desc']).append("<span class='clickable remove'>X</span>");
+        }
+
+        function enhance(ele) {
+            ele.click(function(evt) {
+                $(this).removeClass('new').addClass('done');
+            });
+            return ele;
         }
 
         db.transaction(function(tx) {
@@ -27,11 +35,12 @@ var bapi = function() {
             tx.executeSql("SELECT * FROM tasks", [], function(tx, results) {
                 for (var i = 0; i < results.rows.length; i++) {
                     var task = results.rows.item(i);
-                    compose(task).appendTo(taskList);
+                    enhance(compose(task)).appendTo(taskList);
                 }
             });
         });
     }
+
 
     function saveTask() {
         db.transaction(function(tx) {
