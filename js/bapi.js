@@ -29,7 +29,7 @@ var bapi = function() {
             }
         }
 
-        Task.find(list);
+        Task.where({}, list);
     }
 
     function warning(tx, e) {
