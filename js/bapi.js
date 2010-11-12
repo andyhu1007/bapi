@@ -4,6 +4,7 @@ var bapi = function() {
             newtask = $("article#newtask #new"),
             taskList = $("article#tasks > ul"),
             tasks = $("article#tasks li"),
+            taskEditors = $("article#tasks input"),
             newTasks = $("article#tasks .new"),
             removeButtons = $("article#tasks .remove");
 
@@ -21,7 +22,12 @@ var bapi = function() {
 
     function refresh() {
         function compose(task) {
-            return $("<li data-taskid='" + task['id'] + "' class='new'></li>").text(task['desc']).append("<span class='button remove'>X</span>");
+            return $("<li class='new'></li>").
+                    attr("data-taskid", task['id']).
+                    append($("<span class='desc'></span>").text(task['desc'])).
+                    append("<span class='button remove'>X</span>").
+                    add($("<input type='text' style='display:none;'/>").
+                    val(task['desc']));
         }
 
         db.transaction(function(tx) {
@@ -46,6 +52,17 @@ var bapi = function() {
         });
     }
 
+    function updateTask(task){
+        db.transaction(function(tx) {
+            tx.executeSql("UPDATE tasks SET desc = ? WHERE id = ?", [task.next().val(), parseInt(task.attr('data-taskid'))], function(tx, results) {
+                task.children('.desc').text(task.next().val());
+                task.next().hide();
+            }, function(tx, e) {
+                warning.html(e.message);
+            });
+        });
+    }
+
     function removeTask(task) {
         db.transaction(function(tx) {
             tx.executeSql("DELETE FROM tasks WHERE id = ?", [parseInt(task.attr("data-taskid"))], function(tx, results) {
@@ -61,6 +78,15 @@ var bapi = function() {
             if (13 == evt.keyCode) {
                 saveTask();
             }
+        });
+        $(taskEditors).live('keydown', function(evt){
+            if (13 == evt.keyCode) {
+                var task = $(this).prev();
+                updateTask(task);
+            }
+        });
+        tasks.live('dblclick', function(evt) {
+            $(this).next().show();
         });
         tasks.live('click', function(evt) {
             $(this).toggleClass('new done');
