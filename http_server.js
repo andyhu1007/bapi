@@ -13,7 +13,7 @@ var STATUS_CODE = {
     SERVER_ERROR : 500
 };
 
-var httpServerUtils = {
+var HttpServerUtils = {
     CONTENT_TYPE_MAPPING : {
         js : CONTENT_TYPE.JS,
         html : CONTENT_TYPE.HTML,
@@ -41,24 +41,24 @@ var httpServerUtils = {
 
 };
 
-var httpServer = function(hostname, port) {
-    this.utils = httpServerUtils;
+var HttpServer = function(hostname, port) {
+    this.utils = HttpServerUtils;
     this.start(hostname, port);
 }
 
-httpServer.prototype._response = function(res, file, data) {
+HttpServer.prototype._response = function(res, file, data) {
     res.writeHead(STATUS_CODE.OK, {'Content-Type': this.utils.contentType(file), 'Content-Length' : data.length});
     res.end(data);
 }
 
-httpServer.prototype._error = function(res, err) {
+HttpServer.prototype._error = function(res, err) {
     var status = this.utils.statusCode(err);
     res.writeHead(status.code, {'Content-Type': CONTENT_TYPE.PLAIN});
     res.end(status.msg);
     console.log(err);
 }
 
-httpServer.prototype.render = function(file, res) {
+HttpServer.prototype.render = function(file, res) {
     var self = this;
     require('fs').readFile(file, function (err, data) {
         console.log("get the request for " + file);
@@ -70,7 +70,7 @@ httpServer.prototype.render = function(file, res) {
     });
 };
 
-httpServer.prototype.start = function(hostname, port) {
+HttpServer.prototype.start = function(hostname, port) {
     var self = this;
     require('http').createServer(function (req, res) {
         self.render(self.utils.path(req.url), res);
@@ -78,4 +78,4 @@ httpServer.prototype.start = function(hostname, port) {
     console.log('httpServer running at http://' + hostname + ':' + port + '/');
 };
 
-new httpServer('127.0.0.1', '8124');
+new HttpServer('127.0.0.1', '8124');
