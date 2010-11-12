@@ -20,14 +20,7 @@ var bapi = function() {
 
     function refresh() {
         function compose(task) {
-            return $("<li class='new'></li>").text(task['desc']).append("<span class='clickable remove'>X</span>");
-        }
-
-        function enhance(ele) {
-            ele.click(function(evt) {
-                $(this).removeClass('new').addClass('done');
-            });
-            return ele;
+            return $("<li class='new'></li>").text(task['desc']).append("<span class='button remove'>X</span>");
         }
 
         db.transaction(function(tx) {
@@ -35,7 +28,7 @@ var bapi = function() {
             tx.executeSql("SELECT * FROM tasks", [], function(tx, results) {
                 for (var i = 0; i < results.rows.length; i++) {
                     var task = results.rows.item(i);
-                    enhance(compose(task)).appendTo(taskList);
+                    compose(task).appendTo(taskList);
                 }
             });
         });
@@ -57,7 +50,10 @@ var bapi = function() {
             if (13 == evt.keyCode) {
                 saveTask();
             }
-        })
+        });
+        tasks.live('click', function(evt) {
+            $(this).toggleClass('new done');
+        });
     }
 
     function init() {
