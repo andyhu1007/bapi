@@ -1,6 +1,5 @@
 var bapi = function() {
-    var db = null,
-            warning = $("article#notification .warning"),
+    var warning = $("article#notification .warning"),
             newtask = $("article#newtask #new"),
             taskList = $("article#tasks > ul"),
             tasks = $("article#tasks li"),
@@ -8,19 +7,11 @@ var bapi = function() {
             newTasks = $("article#tasks .new"),
             removeButtons = $("article#tasks .remove");
 
-    function initDB() {
-        if (window.openDatabase) {
-            db = openDatabase("bapi", "", "Bapi Todo List", 2 * 1024 * 1024);
-            db.transaction(function(tx) {
-                tx.executeSql("DROP TABLE tasks", []);  // to be deleted
-                tx.executeSql("CREATE TABLE IF NOT EXISTS tasks (id INTEGER NOT NULL PRIMARY KEY, desc TEXT NOT NULL)", []);
-            });
-        } else {
-            warning.html('Web Databases not supported');
-        }
-    }
-
     function refresh() {
+        function clear() {
+            taskList.html("");
+        }
+
         function compose(task) {
             return $("<li class='new'></li>").
                     attr("data-taskid", task['id']).
@@ -30,75 +21,60 @@ var bapi = function() {
                     val(task['desc']));
         }
 
-        db.transaction(function(tx) {
-            taskList.html("");
-            tx.executeSql("SELECT * FROM tasks", [], function(tx, results) {
-                for (var i = 0; i < results.rows.length; i++) {
-                    var task = results.rows.item(i);
-                    compose(task).appendTo(taskList);
-                }
-            });
-        });
+        function list(tx, results) {
+            clear();
+            for (var i = 0; i < results.rows.length; i++) {
+                var task = results.rows.item(i);
+                compose(task).appendTo(taskList);
+            }
+        }
+
+        Task.find(list, null);
     }
 
-
-    function saveTask() {
-        db.transaction(function(tx) {
-            tx.executeSql("INSERT INTO tasks (desc) VALUES (?)", [$(newtask).val()], function(tx, results) {
-                refresh();
-            }, function(tx, e) {
-                warning.html(e.message);
-            });
-        });
+    function warning(tx, e) {
+        warning.html(e.message);
     }
 
-    function updateTask(task){
-        db.transaction(function(tx) {
-            tx.executeSql("UPDATE tasks SET desc = ? WHERE id = ?", [task.next().val(), parseInt(task.attr('data-taskid'))], function(tx, results) {
-                task.children('.desc').text(task.next().val());
-                task.next().hide();
-            }, function(tx, e) {
-                warning.html(e.message);
-            });
-        });
-    }
+    function init() {
+        if (window.openDatabase) {
+            Task.dropTable(null, null);
+            Task.createTable(null, null);
+        } else {
+            warning.html('Web Databases not supported');
+        }
 
-    function removeTask(task) {
-        db.transaction(function(tx) {
-            tx.executeSql("DELETE FROM tasks WHERE id = ?", [parseInt(task.attr("data-taskid"))], function(tx, results) {
-                task.remove();
-            }, function(tx, e) {
-                warning.html(e.message);
-            });
-        });
-    }
-
-    function initBehaviors() {
         $(newtask).keydown(function(evt) {
             if (13 == evt.keyCode) {
-                saveTask();
+                Task.create({desc: $(newtask).val()}, refresh, warning);
             }
         });
-        $(taskEditors).live('keydown', function(evt){
+        $(newtask).click(function(evt) {
+            $(this).select();
+        });
+        $(taskEditors).live('keydown', function(evt) {
             if (13 == evt.keyCode) {
-                var task = $(this).prev();
-                updateTask(task);
+                var taskEle = $(this).prev();
+                var task = new Task({id: taskEle.attr('data-taskid'), desc: taskEle.next().val()})
+                task.save(function(tx, results) {
+                    taskEle.children('.desc').text(taskEle.next().val());
+                    taskEle.next().hide();
+                }, warning);
             }
         });
         tasks.live('dblclick', function(evt) {
             $(this).next().show();
+            $(this).next().focus();
+            $(this).next().select();
         });
         tasks.live('click', function(evt) {
             $(this).toggleClass('new done');
         });
         removeButtons.live('click', function(evt) {
-            removeTask($(this).parent("li"));
+            var task = new Task({id: parseInt($(this).parent("li").attr('data-taskid'))});
+            var self = this;
+            task.destroy(function(){$(self).parent("li").remove();}, null);
         });
-    }
-
-    function init() {
-        initDB();
-        initBehaviors();
     }
 
     return {init: init};
