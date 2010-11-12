@@ -29,7 +29,7 @@ var bapi = function() {
             }
         }
 
-        Task.find(list, null);
+        Task.find(list);
     }
 
     function warning(tx, e) {
@@ -38,8 +38,8 @@ var bapi = function() {
 
     function init() {
         if (window.openDatabase) {
-            Task.dropTable(null, null);
-            Task.createTable(null, null);
+            Task.dropTable();
+            Task.createTable();
         } else {
             warning.html('Web Databases not supported');
         }
@@ -73,7 +73,7 @@ var bapi = function() {
         removeButtons.live('click', function(evt) {
             var task = new Task({id: parseInt($(this).parent("li").attr('data-taskid'))});
             var self = this;
-            task.destroy(function(){$(self).parent("li").remove();}, null);
+            task.destroy(function(){$(self).parent("li").remove();});
         });
     }
 

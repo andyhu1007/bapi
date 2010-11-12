@@ -1,21 +1,10 @@
+ActiveRecord.extendedBy(Task);
+
 function Task(taskParam) {
+    this.superclass();
     this.id = taskParam.id;
     this.desc = taskParam.desc;
     this.connection = Task.connection;
-};
-
-Task.prototype.save = function(callback, errCallback) {
-    var self = this;
-    this.connection.transaction(function(tx) {
-        tx.executeSql("UPDATE tasks SET desc = ? WHERE id = ?", [self.desc, self.id], callback, errCallback);
-    });
-};
-
-Task.prototype.destroy = function(callback, errCallback) {
-    var self = this;
-    this.connection.transaction(function(tx) {
-        tx.executeSql("DELETE FROM tasks WHERE id = ?", [self.id], callback, errCallback);
-    });
 };
 
 Task.connection = (function() {
