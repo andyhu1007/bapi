@@ -4,7 +4,8 @@ var bapi = function() {
             newtask = $("article#newtask #new"),
             taskList = $("article#tasks > ul"),
             tasks = $("article#tasks li"),
-            newTasks = $("article#tasks .new");
+            newTasks = $("article#tasks .new"),
+            removeButtons = $("article#tasks .remove");
 
     function initDB() {
         if (window.openDatabase) {
@@ -20,7 +21,7 @@ var bapi = function() {
 
     function refresh() {
         function compose(task) {
-            return $("<li class='new'></li>").text(task['desc']).append("<span class='button remove'>X</span>");
+            return $("<li data-taskid='" + task['id'] + "' class='new'></li>").text(task['desc']).append("<span class='button remove'>X</span>");
         }
 
         db.transaction(function(tx) {
@@ -45,6 +46,16 @@ var bapi = function() {
         });
     }
 
+    function removeTask(task) {
+        db.transaction(function(tx) {
+            tx.executeSql("DELETE FROM tasks WHERE id = ?", [parseInt(task.attr("data-taskid"))], function(tx, results) {
+                task.remove();
+            }, function(tx, e) {
+                warning.html(e.message);
+            });
+        });
+    }
+
     function initBehaviors() {
         $(newtask).keydown(function(evt) {
             if (13 == evt.keyCode) {
@@ -53,6 +64,9 @@ var bapi = function() {
         });
         tasks.live('click', function(evt) {
             $(this).toggleClass('new done');
+        });
+        removeButtons.live('click', function(evt) {
+            removeTask($(this).parent("li"));
         });
     }
 
