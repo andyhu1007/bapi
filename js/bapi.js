@@ -19,12 +19,15 @@ var Bapi = function() {
 
         function refresh() {
             function _compose(task) {
-                return $("<li class='new'></li>").
-                        attr("data-taskid", task['id']).
-                        append($("<span class='desc'></span>").text(task['desc'])).
+                return _render(DataAttrMapper.apply($("<li></li>"), task, 'task'));
+            }
+
+            function _render(element) {
+                return element.addClass('new').
+                        append($("<span class='desc'></span>").text(element.dataset('task-desc'))).
                         append("<span class='button remove'>X</span>").
                         add($("<input type='text' style='display:none;'/>").
-                        val(task['desc']));
+                        val(element.dataset('task-desc')));
             }
 
             function _refresh(tx, results) {
@@ -68,7 +71,7 @@ var Bapi = function() {
                 $(taskRmBts).live('click', function(evt) {
                     var self = this;
                     var taskEle = $(self).parent();
-                    var task = new Task({id: taskEle.attr('data-taskid')});
+                    var task = new Task({id: taskEle.attr('data-task-id')});
                     task.destroy(function() {
                         taskEle.remove();
                     });
@@ -77,7 +80,7 @@ var Bapi = function() {
                 $(taskEdis).live('keydown', function(evt) {
                     if (13 == evt.keyCode) {
                         var taskEle = $(this).prev();
-                        new Task({id: taskEle.attr('data-taskid'), desc: taskEle.next().val()}).save(function(tx, results) {
+                        new Task({id: taskEle.attr('data-task-id'), desc: taskEle.next().val()}).save(function(tx, results) {
                             taskEle.children('.desc').text(taskEle.next().val());
                             taskEle.next().hide();
                         }, dbWarning);
