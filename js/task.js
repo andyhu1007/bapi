@@ -1,7 +1,8 @@
 Task.tableName = "tasks";
 Task.columns = {
     id: "INTEGER NOT NULL PRIMARY KEY",
-    desc: "TEXT NOT NULL"
+    desc: "TEXT NOT NULL",
+    state: "TEXT DEFAULT 'NEW'"
 };
 
 function Task(params) {

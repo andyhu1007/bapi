@@ -63,7 +63,11 @@ var Bapi = function() {
                     $(this).next().show().focus().select();
                 });
                 $(taskLIs).live('click', function(evt) {
-                    $(this).toggleClass('new done');
+                    var self = this;
+                    $(self).dataset('task-state', $(self).hasClass('done') ? "NEW" : "DONE");
+                    DataAttrMapper.load(self, Task).save(function() {
+                        $(self).toggleClass('new done');
+                    }, displayWarning);
                 });
                 $(taskRmBts).live('click', function(evt) {
                     var self = this;
