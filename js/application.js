@@ -1,4 +1,4 @@
-var Bapi = function() {
+var Application = function() {
 
     function Selector() {
         this.warning = "article#notification .warning";
@@ -96,5 +96,5 @@ var Bapi = function() {
 };
 
 $(function() {
-    Bapi().init();
+    Application().init();
 });
