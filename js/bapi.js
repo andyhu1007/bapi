@@ -19,7 +19,7 @@ var Bapi = function() {
 
         function refresh() {
             function _compose(task) {
-                return _render(DataAttrMapper.apply($("<li></li>"), task, 'task'));
+                return _render(DataAttrMapper.map($("<li></li>"), task, 'task'));
             }
 
             function _render(element) {
@@ -30,10 +30,10 @@ var Bapi = function() {
                         val(element.dataset('task-desc')));
             }
 
-            function _refresh(tx, results) {
+            function _refresh(tasks) {
                 $(taskUL).html("");
-                for (var i = 0; i < results.rows.length; i++) {
-                    _compose(results.rows.item(i)).appendTo($(taskUL));
+                for (var i = 0; i < tasks.length; i++) {
+                    _compose(tasks[i]).appendTo($(taskUL));
                 }
             }
 

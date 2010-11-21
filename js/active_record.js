@@ -1,6 +1,7 @@
 function ActiveRecord() {
     this.connection = ActiveRecord.connection;
-};
+}
+;
 
 ActiveRecord.config = {
     databaseName: "bapi",
@@ -39,8 +40,8 @@ ActiveRecord.prototype.save = function(callback, errCallback) {
     function columns2updates(columns) {
         var sets = new Array();
         var values = new Array();
-        for(var column in columns){
-            if("id" == column) continue;
+        for (var column in columns) {
+            if ("id" == column) continue;
             sets.push(column + " = ?");
             values.push(self[column]);
         }
@@ -62,9 +63,9 @@ ActiveRecord.createTable = function(callback, errCallback) {
         tx.executeSql("CREATE TABLE IF NOT EXISTS " + self.tableName + " (" + columns2cluase(self.columns) + ")", [], callback, errCallback);
     });
 
-    function columns2cluase(columns){
+    function columns2cluase(columns) {
         var columnTypes = new Array();
-        for(var column in columns) {
+        for (var column in columns) {
             columnTypes.push(column + " " + columns[column]);
         }
         return columnTypes.join(", ");
@@ -83,7 +84,13 @@ ActiveRecord.where = function(conditions, callback, errCallback) {
 
     self.connection.transaction(function(tx) {
         var where = conditions2where(conditions);
-        tx.executeSql("SELECT * FROM " + self.tableName + where.clause, where.params, callback, errCallback);
+        tx.executeSql("SELECT * FROM " + self.tableName + where.clause, where.params, function(tx, results) {
+            var records = new Array();
+            for (var i = 0; i < results.rows.length; i++) {
+                records.push(new self(results.rows.item(i)));
+            }
+            callback(records);
+        }, errCallback);
     });
 
     function conditions2where(conditions) {
