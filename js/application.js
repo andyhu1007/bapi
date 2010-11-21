@@ -18,13 +18,11 @@ var Application = function() {
         }
 
         function refresh() {
-
             function _render(element) {
                 return element.addClass('new').
                         append($("<span class='desc'></span>").text(element.dataset('task-desc'))).
-                        append("<span class='button remove'>X</span>").
-                        add($("<input type='text' style='display:none;'/>").
-                        val(element.dataset('task-desc')));
+                        append($("<input type='text' style='display:none;'/>").val(element.dataset('task-desc'))).
+                        append("<span class='button remove'>X</span>");
             }
 
             function _refresh(tasks) {
@@ -60,7 +58,7 @@ var Application = function() {
                 });
 
                 $(taskLIs).live('dblclick', function(evt) {
-                    $(this).next().show().focus().select();
+                    $(this).find("input").show().focus().select();
                 });
                 $(taskLIs).live('click', function(evt) {
                     var self = this;
@@ -77,15 +75,20 @@ var Application = function() {
                     });
                 }, displayWarning);
 
-                $(taskEdis).live('keydown', function(evt) {
-                    if (13 == evt.keyCode) {
-                        var taskEle = $(this).prev();
-                        taskEle.dataset('task-desc', $(this).val());
-                        DataAttrMapper.load(taskEle, Task).save(function() {
-                            taskEle.children('.desc').text(taskEle.next().val());
-                            taskEle.next().hide();
-                        }, displayWarning);
-                    }
+                $(taskEdis).live('keydown focusout', function(evt) {
+                    var self = this;
+                    if (evt.type == 'keydown' && 13 != evt.keyCode) return;
+
+                    var taskEle = $(this).parent();
+                    taskEle.dataset('task-desc', $(this).val());
+                    DataAttrMapper.load(taskEle, Task).save(function() {
+                        taskEle.children('.desc').text($(self).val());
+                        $(self).hide();
+                    }, displayWarning);
+                });
+
+                $(taskEdis).live('click', function(evt) {
+                    return false;
                 });
             })();
         })();
