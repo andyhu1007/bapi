@@ -57,6 +57,8 @@ var Application = function() {
                     $(this).select();
                 });
 
+                $(taskUL).sortable();
+
                 $(taskLIs).live('dblclick', function(evt) {
                     $(this).find("input").show().focus().select();
                 });
@@ -90,6 +92,8 @@ var Application = function() {
                 $(taskEdis).live('click', function(evt) {
                     return false;
                 });
+
+
             })();
         })();
 
