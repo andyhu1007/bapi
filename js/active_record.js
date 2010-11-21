@@ -34,7 +34,9 @@ ActiveRecord.prototype.save = function(callback, errCallback) {
     self.connection.transaction(function(tx) {
         var updates = columns2updates(self.columns);
         tx.executeSql("UPDATE " + self.tableName + " SET " + updates.sets + " WHERE id = ?",
-                updates.values, callback, errCallback);
+                updates.values, callback, function(tx, e) {
+            errCallback(e.message);
+        });
     });
 
     function columns2updates(columns) {
@@ -53,14 +55,18 @@ ActiveRecord.prototype.save = function(callback, errCallback) {
 ActiveRecord.prototype.destroy = function(callback, errCallback) {
     var self = this;
     self.connection.transaction(function(tx) {
-        tx.executeSql("DELETE FROM " + self.tableName + " WHERE id = ?", [self.id], callback, errCallback);
+        tx.executeSql("DELETE FROM " + self.tableName + " WHERE id = ?", [self.id], callback, function(tx, e) {
+            errCallback(e.message);
+        });
     });
 };
 
 ActiveRecord.createTable = function(callback, errCallback) {
     var self = this;
     self.connection.transaction(function(tx) {
-        tx.executeSql("CREATE TABLE IF NOT EXISTS " + self.tableName + " (" + columns2cluase(self.columns) + ")", [], callback, errCallback);
+        tx.executeSql("CREATE TABLE IF NOT EXISTS " + self.tableName + " (" + columns2cluase(self.columns) + ")", [], callback, function(tx, e) {
+            errCallback(e.message);
+        });
     });
 
     function columns2cluase(columns) {
@@ -75,7 +81,9 @@ ActiveRecord.createTable = function(callback, errCallback) {
 ActiveRecord.dropTable = function(callback, errCallback) {
     var self = this;
     self.connection.transaction(function(tx) {
-        tx.executeSql("DROP TABLE " + self.tableName, [], callback, errCallback);
+        tx.executeSql("DROP TABLE " + self.tableName, [], callback, function(tx, e) {
+            errCallback(e.message);
+        });
     });
 };
 
@@ -90,7 +98,9 @@ ActiveRecord.where = function(conditions, callback, errCallback) {
                 records.push(new self(results.rows.item(i)));
             }
             callback(records);
-        }, errCallback);
+        }, function(tx, e) {
+            errCallback(e.message);
+        });
     });
 
     function conditions2where(conditions) {
@@ -110,7 +120,9 @@ ActiveRecord.create = function(params, callback, errCallback) {
     self.connection.transaction(function(tx) {
         var inserts = params2inserts(params);
         tx.executeSql("INSERT INTO " + self.tableName + " (" + inserts.columns + ") VALUES (" + inserts.marks + ")",
-                inserts.values, callback, errCallback);
+                inserts.values, callback, function(tx, e) {
+            errCallback(e.message);
+        });
     });
 
     function params2inserts(params) {

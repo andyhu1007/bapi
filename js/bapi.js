@@ -13,14 +13,11 @@ var Bapi = function() {
     Selector.apply(this);
 
     function init() {
-        function dbWarning(tx, e) {
-            $(warning).html(e.message);
+        function displayWarning(message) {
+            $(warning).html(message);
         }
 
         function refresh() {
-            function _compose(task) {
-                return _render(DataAttrMapper.map($("<li></li>"), task));
-            }
 
             function _render(element) {
                 return element.addClass('new').
@@ -33,7 +30,7 @@ var Bapi = function() {
             function _refresh(tasks) {
                 $(taskUL).html("");
                 for (var i = 0; i < tasks.length; i++) {
-                    _compose(tasks[i]).appendTo($(taskUL));
+                    _render(DataAttrMapper.map($("<li></li>"), tasks[i])).appendTo($(taskUL));
                 }
             }
 
@@ -46,7 +43,7 @@ var Bapi = function() {
                 Task.dropTable();
                 Task.createTable();
             } else {
-                $(warning).html('Web Databases not supported');
+                displayWarning('Web Databases not supported');
             }
         })();
 
@@ -54,7 +51,7 @@ var Bapi = function() {
             (function initCRUD() {
                 $(add).keydown(function(evt) {
                     if (13 == evt.keyCode) {
-                        Task.create({desc: $(add).val()}, refresh, dbWarning);
+                        Task.create({desc: $(add).val()}, refresh, displayWarning);
                     }
                 });
 
@@ -71,19 +68,19 @@ var Bapi = function() {
                 $(taskRmBts).live('click', function(evt) {
                     var self = this;
                     var taskEle = $(self).parent();
-                    DataAttrMapper.load(Task, taskEle).destroy(function() {
+                    DataAttrMapper.load(taskEle, Task).destroy(function() {
                         taskEle.remove();
                     });
-                }, dbWarning);
+                }, displayWarning);
 
                 $(taskEdis).live('keydown', function(evt) {
                     if (13 == evt.keyCode) {
                         var taskEle = $(this).prev();
                         taskEle.dataset('task-desc', $(this).val());
-                        DataAttrMapper.load(Task, taskEle).save(function(tx, results) {
+                        DataAttrMapper.load(taskEle, Task).save(function() {
                             taskEle.children('.desc').text(taskEle.next().val());
                             taskEle.next().hide();
-                        }, dbWarning);
+                        }, displayWarning);
                     }
                 });
             })();

@@ -8,7 +8,7 @@ var DataAttrMapper = {
         return $(element);
     },
 
-    load: function(constructor, element) {
+    load: function(element, constructor) {
         var presetPre = constructor.dataAttrPre;
         var pattern = new RegExp((presetPre == undefined || presetPre == null) ? "^(.*)$" : "^" + presetPre + "\-(.*)$");
         var object = new constructor();
