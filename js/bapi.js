@@ -71,8 +71,7 @@ var Bapi = function() {
                 $(taskRmBts).live('click', function(evt) {
                     var self = this;
                     var taskEle = $(self).parent();
-                    var task = new Task({id: taskEle.attr('data-task-id')});
-                    task.destroy(function() {
+                    DataAttrMapper.load(Task, taskEle, 'task').destroy(function() {
                         taskEle.remove();
                     });
                 }, dbWarning);
@@ -80,7 +79,8 @@ var Bapi = function() {
                 $(taskEdis).live('keydown', function(evt) {
                     if (13 == evt.keyCode) {
                         var taskEle = $(this).prev();
-                        new Task({id: taskEle.attr('data-task-id'), desc: taskEle.next().val()}).save(function(tx, results) {
+                        taskEle.dataset('task-desc', $(this).val());
+                        DataAttrMapper.load(Task, taskEle, 'task').save(function(tx, results) {
                             taskEle.children('.desc').text(taskEle.next().val());
                             taskEle.next().hide();
                         }, dbWarning);

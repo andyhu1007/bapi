@@ -4,12 +4,8 @@ Task.columns = {
     desc: "TEXT NOT NULL"
 };
 
-function Task(param) {
+function Task() {
     this.superclass(this);
-
-    for(var column in param) {
-        this[column] = param[column];
-    }
 };
 
 ActiveRecord.asSuperOf(Task);

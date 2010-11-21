@@ -11,6 +11,12 @@ var DataAttrMapper = {
     },
 
     load: function(constructor, element, prefix) {
-            
+        var pattern = new RegExp("^" + prefix + "\-(.*)$");
+        var object = new constructor();
+        var dataset = $(element).dataset();
+        for(var key in dataset) {
+            object[pattern.exec(key)[1]] = dataset[key];    
+        }
+        return object;
     }
 }
