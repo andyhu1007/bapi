@@ -19,7 +19,7 @@ var Bapi = function() {
 
         function refresh() {
             function _compose(task) {
-                return _render(DataAttrMapper.map($("<li></li>"), task, 'task'));
+                return _render(DataAttrMapper.map($("<li></li>"), task));
             }
 
             function _render(element) {
@@ -71,7 +71,7 @@ var Bapi = function() {
                 $(taskRmBts).live('click', function(evt) {
                     var self = this;
                     var taskEle = $(self).parent();
-                    DataAttrMapper.load(Task, taskEle, 'task').destroy(function() {
+                    DataAttrMapper.load(Task, taskEle).destroy(function() {
                         taskEle.remove();
                     });
                 }, dbWarning);
@@ -80,7 +80,7 @@ var Bapi = function() {
                     if (13 == evt.keyCode) {
                         var taskEle = $(this).prev();
                         taskEle.dataset('task-desc', $(this).val());
-                        DataAttrMapper.load(Task, taskEle, 'task').save(function(tx, results) {
+                        DataAttrMapper.load(Task, taskEle).save(function(tx, results) {
                             taskEle.children('.desc').text(taskEle.next().val());
                             taskEle.next().hide();
                         }, dbWarning);

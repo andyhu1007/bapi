@@ -1,4 +1,4 @@
-Task.tableName = 'tasks';
+Task.tableName = "tasks";
 Task.columns = {
     id: "INTEGER NOT NULL PRIMARY KEY",
     desc: "TEXT NOT NULL"
@@ -15,3 +15,5 @@ function Task(params) {
 }
 
 ActiveRecord.asSuperOf(Task);
+
+Task.dataAttrPre = "task";
