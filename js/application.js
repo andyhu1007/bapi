@@ -8,6 +8,8 @@ var Application = function() {
         this.todayTaskLIs = this.todayTaskUL + " li";
         this.todayTaskEdis = this.todayTaskUL + " input";
         this.todayTaskRmBts = this.todayTaskUL + " .remove";
+
+        this.pastTaskUL = this.tasksArti + " #past ul";
     }
 
     Selector.apply(this);
@@ -25,15 +27,34 @@ var Application = function() {
                         append("<span class='button remove'>X</span>");
             }
 
+            function _list(tasks, target) {
+                $.each(tasks, function() {
+                    _render(DataAttrMapper.map($("<li></li>"), this)).appendTo($(target));
+                });
+            }
+
+            function _groupTasks(tasks) {
+                var taskGroups = {today: new Array(), past: new Array};
+                $.each(tasks, function() {
+                    if ((new Date().format("yyyy-mm-dd")) == this.created_date) {
+                        taskGroups.today.push(this);
+                    } else {
+                        taskGroups.past.push(this);
+                    }
+                });
+                return taskGroups;
+            }
+
             function _refresh(tasks) {
+                var taskGroups = _groupTasks(tasks);
                 $(todayTaskUL).html("");
-                for (var i = 0; i < tasks.length; i++) {
-                    _render(DataAttrMapper.map($("<li></li>"), tasks[i])).appendTo($(todayTaskUL));
-                }
+                $(pastTaskUL).html("");
+                _list(taskGroups.today, todayTaskUL);
+                _list(taskGroups.past, pastTaskUL);
             }
 
             Task.where({order: "ORDER BY created_date, seq, id"}, _refresh);
-        };
+        }
 
         function reorder() {
             $(todayTaskLIs).each(function(index) {
@@ -41,11 +62,10 @@ var Application = function() {
                 task.seq = index;
                 task.save();
             });
-        };
+        }
 
         (function initDB() {
             if (window.openDatabase) {
-                Task.dropTable();
                 Task.createTable();
             } else {
                 displayWarning('Web Databases not supported');
@@ -58,7 +78,7 @@ var Application = function() {
                     if (13 == evt.keyCode) {
                         Task.create({desc: $(add).val(), seq: $(todayTaskLIs).length}, refresh, displayWarning);
                     }
-                    
+
                 });
 
                 $(add).click(function(evt) {
