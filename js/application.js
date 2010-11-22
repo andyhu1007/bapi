@@ -10,7 +10,6 @@ var Application = function() {
         this.taskRmBts = this.tasksArti + " .remove";
 
         this.todayTaskUL = this.tasksArti + " #today ul";
-
         this.pastTaskUL = this.tasksArti + " #past ul";
     }
 
@@ -23,7 +22,7 @@ var Application = function() {
 
         function refresh() {
             function _render(element) {
-                return element.addClass('new').
+                return element.addClass(element.dataset('task-state')).
                         append($("<span class='desc'></span>").text(element.dataset('task-desc'))).
                         append($("<input type='text' style='display:none;'/>").val(element.dataset('task-desc'))).
                         append("<span class='button remove'>X</span>");
@@ -96,7 +95,7 @@ var Application = function() {
                 $(taskLIs).live('click dblclick', function(evt) {
                     var self = this;
                     if (evt.type == 'click') {
-                        $(self).dataset('task-state', $(self).hasClass('done') ? "NEW" : "DONE");
+                        $(self).dataset('task-state', $(self).hasClass('done') ? "new" : "done");
                         DataAttrMapper.load(self, Task).save(function() {
                             $(self).toggleClass('new done');
                         }, displayWarning);
