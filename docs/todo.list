@@ -1,11 +1,7 @@
-2. task controller
-2. separete items by day
-3. scroll to load (google map)
+1. weather node js, web socket
+2. geographic
+3. UI 
 
-4. UI
-
-
-11. node js, web socket
-12. weather
-13. geographic
-14. Http Method
+11. Http Method
+12. task controller
+13. scroll to load (google map)
