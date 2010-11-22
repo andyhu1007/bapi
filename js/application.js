@@ -4,10 +4,10 @@ var Application = function() {
         this.warning = "article#notification .warning";
         this.add = "article#newtask #new";
         this.tasksArti = "article#tasks";
-        this.taskUL = this.tasksArti + " > ul";
-        this.taskLIs = this.tasksArti + " li";
-        this.taskEdis = this.tasksArti + " input";
-        this.taskRmBts = this.tasksArti + " .remove";
+        this.todayTaskUL = this.tasksArti + " #today ul";
+        this.todayTaskLIs = this.todayTaskUL + " li";
+        this.todayTaskEdis = this.todayTaskUL + " input";
+        this.todayTaskRmBts = this.todayTaskUL + " .remove";
     }
 
     Selector.apply(this);
@@ -26,17 +26,17 @@ var Application = function() {
             }
 
             function _refresh(tasks) {
-                $(taskUL).html("");
+                $(todayTaskUL).html("");
                 for (var i = 0; i < tasks.length; i++) {
-                    _render(DataAttrMapper.map($("<li></li>"), tasks[i])).appendTo($(taskUL));
+                    _render(DataAttrMapper.map($("<li></li>"), tasks[i])).appendTo($(todayTaskUL));
                 }
             }
 
-            Task.where({order: "ORDER BY seq, id"}, _refresh);
+            Task.where({order: "ORDER BY created_date, seq, id"}, _refresh);
         };
 
         function reorder() {
-            $(taskLIs).each(function(index) {
+            $(todayTaskLIs).each(function(index) {
                 var task = DataAttrMapper.load(this, Task);
                 task.seq = index;
                 task.save();
@@ -56,7 +56,7 @@ var Application = function() {
             (function initCRUD() {
                 $(add).keydown(function(evt) {
                     if (13 == evt.keyCode) {
-                        Task.create({desc: $(add).val(), seq: $(taskLIs).length}, refresh, displayWarning);
+                        Task.create({desc: $(add).val(), seq: $(todayTaskLIs).length}, refresh, displayWarning);
                     }
                     
                 });
@@ -65,17 +65,17 @@ var Application = function() {
                     $(this).select();
                 });
 
-                $(taskUL).sortable({
+                $(todayTaskUL).sortable({
                     update : function() {
                         reorder();
                         refresh();
                     }
                 });
 
-                $(taskLIs).live('dblclick', function(evt) {
+                $(todayTaskLIs).live('dblclick', function(evt) {
                     $(this).find("input").show().focus().select();
                 });
-                $(taskLIs).live('click', function(evt) {
+                $(todayTaskLIs).live('click', function(evt) {
                     var self = this;
                     $(self).dataset('task-state', $(self).hasClass('done') ? "NEW" : "DONE");
                     DataAttrMapper.load(self, Task).save(function() {
@@ -83,7 +83,7 @@ var Application = function() {
                     }, displayWarning);
                 });
 
-                $(taskRmBts).live('click', function(evt) {
+                $(todayTaskRmBts).live('click', function(evt) {
                     var self = this;
                     var taskEle = $(self).parent();
                     DataAttrMapper.load(taskEle, Task).destroy(function() {
@@ -91,7 +91,7 @@ var Application = function() {
                     });
                 }, displayWarning);
 
-                $(taskEdis).live('keydown focusout', function(evt) {
+                $(todayTaskEdis).live('keydown focusout', function(evt) {
                     var self = this;
                     if (evt.type == 'keydown' && 13 != evt.keyCode) return;
 
@@ -103,7 +103,7 @@ var Application = function() {
                     }, displayWarning);
                 });
 
-                $(taskEdis).live('click', function(evt) {
+                $(todayTaskEdis).live('click', function(evt) {
                     return false;
                 });
 
