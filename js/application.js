@@ -4,10 +4,12 @@ var Application = function() {
         this.warning = "article#notification .warning";
         this.add = "article#newtask #new";
         this.tasksArti = "article#tasks";
+        this.taskULs = this.tasksArti + " ul";
+        this.taskLIs = this.tasksArti + " li";
+        this.taskEdis = this.tasksArti + " input";
+        this.taskRmBts = this.tasksArti + " .remove";
+
         this.todayTaskUL = this.tasksArti + " #today ul";
-        this.todayTaskLIs = this.todayTaskUL + " li";
-        this.todayTaskEdis = this.todayTaskUL + " input";
-        this.todayTaskRmBts = this.todayTaskUL + " .remove";
 
         this.pastTaskUL = this.tasksArti + " #past ul";
     }
@@ -57,10 +59,12 @@ var Application = function() {
         }
 
         function reorder() {
-            $(todayTaskLIs).each(function(index) {
-                var task = DataAttrMapper.load(this, Task);
-                task.seq = index;
-                task.save();
+            $(taskULs).each(function() {
+                $(this).find("li").each(function(index) {
+                    var task = DataAttrMapper.load(this, Task);
+                    task.seq = index;
+                    task.save();
+                });
             });
         }
 
@@ -74,36 +78,34 @@ var Application = function() {
 
         (function initUI() {
             (function initCRUD() {
-                $(add).keydown(function(evt) {
-                    if (13 == evt.keyCode) {
-                        Task.create({desc: $(add).val(), seq: $(todayTaskLIs).length}, refresh, displayWarning);
+                $(add).bind('click keydown', function(evt) {
+                    if (evt.type == 'click') {
+                        $(this).select();
+                    } else if (13 == evt.keyCode) {
+                        Task.create({desc: $(add).val(), seq: $(todayTaskUL).find("li").length}, refresh, displayWarning);
                     }
-
                 });
 
-                $(add).click(function(evt) {
-                    $(this).select();
-                });
-
-                $(todayTaskUL).sortable({
+                $(taskULs).sortable({
                     update : function() {
                         reorder();
                         refresh();
                     }
                 });
 
-                $(todayTaskLIs).live('dblclick', function(evt) {
-                    $(this).find("input").show().focus().select();
-                });
-                $(todayTaskLIs).live('click', function(evt) {
+                $(taskLIs).live('click dblclick', function(evt) {
                     var self = this;
-                    $(self).dataset('task-state', $(self).hasClass('done') ? "NEW" : "DONE");
-                    DataAttrMapper.load(self, Task).save(function() {
-                        $(self).toggleClass('new done');
-                    }, displayWarning);
+                    if (evt.type == 'click') {
+                        $(self).dataset('task-state', $(self).hasClass('done') ? "NEW" : "DONE");
+                        DataAttrMapper.load(self, Task).save(function() {
+                            $(self).toggleClass('new done');
+                        }, displayWarning);
+                    } else {
+                        $(self).find("input").show().focus().select();
+                    }
                 });
 
-                $(todayTaskRmBts).live('click', function(evt) {
+                $(taskRmBts).live('click', function(evt) {
                     var self = this;
                     var taskEle = $(self).parent();
                     DataAttrMapper.load(taskEle, Task).destroy(function() {
@@ -111,22 +113,21 @@ var Application = function() {
                     });
                 }, displayWarning);
 
-                $(todayTaskEdis).live('keydown focusout', function(evt) {
-                    var self = this;
-                    if (evt.type == 'keydown' && 13 != evt.keyCode) return;
+                $(taskEdis).live('click keydown focusout', function(evt) {
+                    if (evt.type == 'click') {
+                        return false;
+                    } else {
+                        var self = this;
+                        if (evt.type == 'keydown' && 13 != evt.keyCode) return;
 
-                    var taskEle = $(this).parent();
-                    taskEle.dataset('task-desc', $(this).val());
-                    DataAttrMapper.load(taskEle, Task).save(function() {
-                        taskEle.children('.desc').text($(self).val());
-                        $(self).hide();
-                    }, displayWarning);
+                        var taskEle = $(this).parent();
+                        taskEle.dataset('task-desc', $(this).val());
+                        DataAttrMapper.load(taskEle, Task).save(function() {
+                            taskEle.children('.desc').text($(self).val());
+                            $(self).hide();
+                        }, displayWarning);
+                    }
                 });
-
-                $(todayTaskEdis).live('click', function(evt) {
-                    return false;
-                });
-
 
             })();
             refresh();
