@@ -1,18 +1,19 @@
 function ActiveRecord() {
-    this.connection = ActiveRecord.connection;
+    this._connection = ActiveRecord._connection;
+    this._transaction = ActiveRecord._transaction;
+    this._query = ActiveRecord._query;
 }
-;
 
-ActiveRecord.config = {
+ActiveRecord._config = {
     databaseName: "bapi",
     version: "",
     desc: "Bapi Todo List",
     size: 2 * 1024 * 1024
 }
 
-ActiveRecord.connection = (function() {
+ActiveRecord._connection = (function() {
     return window.openDatabase ?
-            openDatabase(ActiveRecord.config.databaseName, ActiveRecord.config.version, ActiveRecord.config.desc, ActiveRecord.config.size) :
+            openDatabase(ActiveRecord._config.databaseName, ActiveRecord._config.version, ActiveRecord._config.desc, ActiveRecord._config.size) :
             null;
 })();
 
@@ -31,13 +32,10 @@ ActiveRecord.asSuperOf = function(SubClass) {
 
 ActiveRecord.prototype.save = function(callback, errCallback) {
     var self = this;
-    self.connection.transaction(function(tx) {
-        var updates = columns2updates(self.columns);
-        tx.executeSql("UPDATE " + self.tableName + " SET " + updates.sets + " WHERE id = ?",
-                updates.values, callback, function(tx, e) {
-            errCallback(e.message);
-        });
-    });
+    var updates = columns2updates(self.columns);
+    self._transaction(
+            self._query("UPDATE " + self.tableName + " SET " + updates.sets + " WHERE id = ?", updates.values),
+            callback, errCallback);
 
     function columns2updates(columns) {
         var sets = new Array();
@@ -54,20 +52,16 @@ ActiveRecord.prototype.save = function(callback, errCallback) {
 
 ActiveRecord.prototype.destroy = function(callback, errCallback) {
     var self = this;
-    self.connection.transaction(function(tx) {
-        tx.executeSql("DELETE FROM " + self.tableName + " WHERE id = ?", [self.id], callback, function(tx, e) {
-            errCallback(e.message);
-        });
-    });
+    self._transaction(self._query("DELETE FROM " + self.tableName + " WHERE id = ?", [self.id]), callback, errCallback);
 };
 
 ActiveRecord.createTable = function(callback, errCallback) {
     var self = this;
-    self.connection.transaction(function(tx) {
-        tx.executeSql("CREATE TABLE IF NOT EXISTS " + self.tableName + " (" + columns2cluase(self.columns) + ")", [], callback, function(tx, e) {
-            errCallback(e.message);
-        });
-    });
+    self._transaction(
+            self._query("CREATE TABLE IF NOT EXISTS " + self.tableName + " (" + columns2cluase(self.columns) + ")"),
+            callback, errCallback
+            );
+
 
     function columns2cluase(columns) {
         var columnTypes = new Array();
@@ -80,28 +74,22 @@ ActiveRecord.createTable = function(callback, errCallback) {
 
 ActiveRecord.dropTable = function(callback, errCallback) {
     var self = this;
-    self.connection.transaction(function(tx) {
-        tx.executeSql("DROP TABLE " + self.tableName, [], callback, function(tx, e) {
-            errCallback(e.message);
-        });
-    });
+    self._transaction(self._query("DROP TABLE " + self.tableName), callback, errCallback);
 };
 
 ActiveRecord.where = function(conditions, callback, errCallback) {
     var self = this;
 
-    self.connection.transaction(function(tx) {
-        var where = conditions2where(conditions.where);
-        tx.executeSql("SELECT * FROM " + self.tableName + where.clause + " " + conditions.order, where.params, function(tx, results) {
-            var records = new Array();
-            for (var i = 0; i < results.rows.length; i++) {
-                records.push(new self(results.rows.item(i)));
-            }
-            callback(records);
-        }, function(tx, e) {
-            errCallback(e.message);
-        });
-    });
+    var where = conditions2where(conditions.where);
+    self._transaction(
+            self._query("SELECT * FROM " + self.tableName + where.clause + " " + conditions.order, where.params),
+            function(tx, results) {
+                var records = new Array();
+                for (var i = 0; i < results.rows.length; i++) {
+                    records.push(new self(results.rows.item(i)));
+                }
+                callback(records);
+            }, errCallback);
 
     function conditions2where(whereConditions) {
         var whereClause = "";
@@ -117,13 +105,10 @@ ActiveRecord.where = function(conditions, callback, errCallback) {
 
 ActiveRecord.create = function(params, callback, errCallback) {
     var self = this;
-    self.connection.transaction(function(tx) {
-        var inserts = params2inserts(params);
-        tx.executeSql("INSERT INTO " + self.tableName + " (" + inserts.columns + ") VALUES (" + inserts.marks + ")",
-                inserts.values, callback, function(tx, e) {
-            errCallback(e.message);
-        });
-    });
+    var inserts = params2inserts(params);
+    self._transaction(
+            self._query("INSERT INTO " + self.tableName + " (" + inserts.columns + ") VALUES (" + inserts.marks + ")", inserts.values),
+            callback, errCallback);
 
     function params2inserts(params) {
         var columns = new Array();
@@ -137,3 +122,16 @@ ActiveRecord.create = function(params, callback, errCallback) {
         return {columns: columns.join(', '), marks: marks.join(', '), values: values}
     }
 };
+
+ActiveRecord._transaction = function(query, callback, errCallback) {
+    this._connection.transaction(function(tx) {
+        tx.executeSql(query.clause, query.params, callback, function(tx, e) {
+            errCallback(e.message);
+        });
+    });
+}
+
+ActiveRecord._query = function(clause, params) {
+    params = (params == undefined || params == null) ? [] : params;
+    return {clause: clause, params: params};
+}

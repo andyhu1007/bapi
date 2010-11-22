@@ -69,6 +69,7 @@ var Application = function() {
 
         (function initDB() {
             if (window.openDatabase) {
+                Task.dropTable();
                 Task.createTable();
             } else {
                 displayWarning('Web Databases not supported');
