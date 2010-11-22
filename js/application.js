@@ -110,8 +110,8 @@ var Application = function() {
                     var taskEle = $(self).parent();
                     DataAttrMapper.load(taskEle, Task).destroy(function() {
                         taskEle.remove();
-                    });
-                }, displayWarning);
+                    }, displayWarning);
+                });
 
                 $(taskEdis).live('click keydown focusout', function(evt) {
                     if (evt.type == 'click') {
