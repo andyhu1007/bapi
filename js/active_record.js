@@ -91,8 +91,8 @@ ActiveRecord.where = function(conditions, callback, errCallback) {
     var self = this;
 
     self.connection.transaction(function(tx) {
-        var where = conditions2where(conditions);
-        tx.executeSql("SELECT * FROM " + self.tableName + where.clause, where.params, function(tx, results) {
+        var where = conditions2where(conditions.where);
+        tx.executeSql("SELECT * FROM " + self.tableName + where.clause + " " + conditions.order, where.params, function(tx, results) {
             var records = new Array();
             for (var i = 0; i < results.rows.length; i++) {
                 records.push(new self(results.rows.item(i)));
@@ -103,12 +103,12 @@ ActiveRecord.where = function(conditions, callback, errCallback) {
         });
     });
 
-    function conditions2where(conditions) {
+    function conditions2where(whereConditions) {
         var whereClause = "";
         var params = new Array();
-        for (var condition in conditions) {
+        for (var condition in whereConditions) {
             whereClause += (condition + " = ? ");
-            params.push(conditions[condition]);
+            params.push(whereConditions[condition]);
         }
         return {clause: ("" == whereClause ? "" : " WHERE " + whereClause)
             , params: params}

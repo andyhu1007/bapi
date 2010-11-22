@@ -32,13 +32,19 @@ var Application = function() {
                 }
             }
 
-            Task.where({}, _refresh);
-        }
+            Task.where({order: "ORDER BY seq, id"}, _refresh);
+        };
 
+        function reorder() {
+            $(taskLIs).each(function(index) {
+                var task = DataAttrMapper.load(this, Task);
+                task.seq = index;
+                task.save();
+            });
+        };
 
         (function initDB() {
             if (window.openDatabase) {
-                Task.dropTable();
                 Task.createTable();
             } else {
                 displayWarning('Web Databases not supported');
@@ -49,15 +55,21 @@ var Application = function() {
             (function initCRUD() {
                 $(add).keydown(function(evt) {
                     if (13 == evt.keyCode) {
-                        Task.create({desc: $(add).val()}, refresh, displayWarning);
+                        Task.create({desc: $(add).val(), seq: $(taskLIs).length}, refresh, displayWarning);
                     }
+                    
                 });
 
                 $(add).click(function(evt) {
                     $(this).select();
                 });
 
-                $(taskUL).sortable();
+                $(taskUL).sortable({
+                    update : function() {
+                        reorder();
+                        refresh();
+                    }
+                });
 
                 $(taskLIs).live('dblclick', function(evt) {
                     $(this).find("input").show().focus().select();
@@ -69,6 +81,7 @@ var Application = function() {
                         $(self).toggleClass('new done');
                     }, displayWarning);
                 });
+
                 $(taskRmBts).live('click', function(evt) {
                     var self = this;
                     var taskEle = $(self).parent();
@@ -95,6 +108,7 @@ var Application = function() {
 
 
             })();
+            refresh();
         })();
 
     }
