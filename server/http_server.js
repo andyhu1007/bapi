@@ -1,15 +1,15 @@
-var HttpServer = function(hostname, port, homePath) {
-    this.homePath = homePath;
+var HttpServer = function(hostname, port, options) {
     this.http = require('http');
     this.fs = require('fs');
     this.utils = require('http_utils.js');
+    this.utils.accept(options);
     this.start(hostname, port);
 }
 
 HttpServer.prototype.start = function(hostname, port) {
     var self = this;
     self.http.createServer(function (req, res) {
-        render(self.utils.path(req.url, self.homePath), res);
+        render(self.utils.path(req.url), res);
     }).listen(port, hostname);
     console.log('httpServer running at http://' + hostname + ':' + port + '/');
 

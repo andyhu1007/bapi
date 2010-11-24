@@ -33,16 +33,30 @@ var HttpUtils = {
         }
     },
 
-    path : function(url, homePath) {
-        var pathname = require('url').parse(url).pathname;
-        var filePath = '/' == pathname ? 'index.html' : pathname.match(/\/(.+)/)[1];
-        return (homePath == undefined || homePath == null) ? filePath : homePath + filePath;
-    }
+    path : function(url) {
+        var self = HttpUtils;
+        var pathname = self._url.parse(url).pathname;
+        var filePath = '/' == pathname ? self.homepage : pathname.match(/\/(.+)/)[1];
+        return self.homepath + filePath;
+    },
+
+    accept : function(options) {
+        var self = HttpUtils;
+        var isBlank = function(object) {
+            return (object == undefined || object == null);
+        }
+        self.homepath = !isBlank(options) && !isBlank(options.homepath) ? options.homepath : './';
+        self.homepage = !isBlank(options) && !isBlank(options.homepage) ? options.homepage : 'index.html';
+    },
+
+    _url : require('url')
 
 };
+
 
 exports.CONTENT_TYPE = CONTENT_TYPE;
 exports.STATUS_CODE = STATUS_CODE;
 exports.contentType = HttpUtils.contentType;
 exports.statusCode = HttpUtils.statusCode;
-exports.path = HttpUtils.path; 
+exports.path = HttpUtils.path;
+exports.accept = HttpUtils.accept;
