@@ -37,6 +37,6 @@ HttpServer.prototype.start = function(hostname, port) {
     };
 };
 
-exports.listen = function(hostname, port, homePath) {
-    new HttpServer(hostname, port, homePath);
+exports.listen = function(hostname, port, options) {
+    new HttpServer(hostname, port, options);
 }
