@@ -132,6 +132,6 @@ ActiveRecord._transaction = function(query, callback, errCallback) {
 }
 
 ActiveRecord._query = function(clause, params) {
-    params = (params == undefined || params == null) ? [] : params;
+    params = isBlank(params) ? [] : params;
     return {clause: clause, params: params};
 }

@@ -10,7 +10,7 @@ Task.columns = {
 function Task(params) {
     this.superclass(this);
 
-    if (params != undefined && params != null) {
+    if (!isBlank(params)) {
         for (var key in params) {
             this[key] = params[key];
         }
