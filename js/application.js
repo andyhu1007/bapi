@@ -2,12 +2,12 @@ var Application = function() {
 
     function Selector() {
         this.warning = "article#notification .warning";
-        this.add = "article#newtask #new";
+        this.add = "article#tasks #new";
         this.tasksArti = "article#tasks";
         this.taskTBs = this.tasksArti + " table";
         this.taskTRs = this.taskTBs + " tr";
         this.taskTDContents = this.taskTRs + " td.content"
-        this.taskEdis = this.tasksArti + " input";
+        this.taskEdis = this.taskTBs + " input";
         this.taskRmBts = this.tasksArti + " .remove";
 
         this.todayTaskTB = this.tasksArti + " #today table";

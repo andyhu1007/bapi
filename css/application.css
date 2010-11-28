@@ -18,6 +18,15 @@ article#bapi {
     padding: 20px;
 }
 
+article#bapi article#tasks {
+    margin-left: 30px;
+}
+
+article#bapi #new {
+    margin-top: 30px;
+    width: 520px;
+}
+
 article#bapi #notification {
     margin-top: 10px;
     border-top: 1px dashed #ccc;
@@ -30,7 +39,7 @@ article#bapi #notification {
 
 #tasks tr td.content {
     cursor: pointer;
-    width: 300px;
+    width: 500px;
 }
 
 #tasks tr td.buttons {
