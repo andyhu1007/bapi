@@ -4,18 +4,8 @@ function ActiveRecord() {
     this._query = ActiveRecord._query;
 }
 
-ActiveRecord._config = {
-    databaseName: "bapi",
-    version: "",
-    desc: "Bapi Todo List",
-    size: 2 * 1024 * 1024
-}
-
-ActiveRecord._connection = (function() {
-    return window.openDatabase ?
-            openDatabase(ActiveRecord._config.databaseName, ActiveRecord._config.version, ActiveRecord._config.desc, ActiveRecord._config.size) :
-            null;
-})();
+ActiveRecord._connection = Database.connection();
+ActiveRecord._transaction = Database.transaction;
 
 ActiveRecord.asSuperOf = function(SubClass) {
     SubClass.prototype = new ActiveRecord();
@@ -122,14 +112,6 @@ ActiveRecord.create = function(params, callback, errCallback) {
         return {columns: columns.join(', '), marks: marks.join(', '), values: values}
     }
 };
-
-ActiveRecord._transaction = function(query, callback, errCallback) {
-    this._connection.transaction(function(tx) {
-        tx.executeSql(query.clause, query.params, callback, function(tx, e) {
-            errCallback(e.message);
-        });
-    });
-}
 
 ActiveRecord._query = function(clause, params) {
     params = isBlank(params) ? [] : params;
