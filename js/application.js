@@ -71,9 +71,8 @@ var Application = function() {
         function reorder() {
             $(taskTBs).each(function() {
                 $(this).find("tr").each(function(index) {
-                    var task = DataAttrMapper.load(this, Task);
-                    task.seq = index;
-                    task.save();
+                    $(this).dataset('task-seq', index);
+                    DataAttrMapper.load(this, Task).save();
                 });
             });
         }
@@ -88,19 +87,18 @@ var Application = function() {
 
         (function initUI() {
             (function initCRUD() {
+                $(taskTBs).sortable({
+                    items: 'tr',
+                    update : function() {
+                        reorder();
+                    }
+                });
+
                 $(add).bind('click keydown', function(evt) {
                     if (evt.type == 'click') {
                         $(this).select();
                     } else if (13 == evt.keyCode) {
                         Task.create({desc: $(add).val(), seq: $(todayTaskTB).find("tr").length}, refresh, displayWarning);
-                    }
-                });
-
-                $(taskTBs).sortable({
-                    items: 'tr',
-                    update : function() {
-                        reorder();
-                        refresh();
                     }
                 });
 
@@ -122,6 +120,7 @@ var Application = function() {
                     var taskEle = $(self).parents('tr');
                     DataAttrMapper.load(taskEle, Task).destroy(function() {
                         taskEle.remove();
+                        reorder();
                     }, displayWarning);
                 });
 
