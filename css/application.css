@@ -18,8 +18,31 @@ article#bapi {
     padding: 20px;
 }
 
-article#bapi article#tasks {
-    margin-left: 30px;
+#title {
+    margin: 40px;
+}
+
+article#tasks {
+    margin: 0 30px;
+}
+
+article#manual {
+    color: gray;
+    margin: 20px 30px;
+}
+
+article#manual header:hover{
+    cursor: pointer;
+    color: black;
+}
+
+article#manual section {
+    display: none;
+    margin-top: 10px;
+}
+
+article#manual section span {
+    margin-right: 10px;
 }
 
 article#bapi #new {

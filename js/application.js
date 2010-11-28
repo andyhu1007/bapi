@@ -12,6 +12,10 @@ var Application = function() {
 
         this.todayTaskTB = this.tasksArti + " #today table";
         this.pastTaskTB = this.tasksArti + " #past table";
+
+        this.manualArti = "article#manual"
+        this.manualHeader = this.manualArti + " header";
+        this.manualSec = this.manualArti + " section";
     }
 
     Selector.apply(this);
@@ -137,6 +141,12 @@ var Application = function() {
                     }
                 });
 
+            })();
+
+            (function initManual() {
+                $(manualHeader).click(function(evt) {
+                    $(manualSec).slideToggle('slow');
+                })
             })();
             refresh();
         })();
