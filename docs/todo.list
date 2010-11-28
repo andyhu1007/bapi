@@ -1,6 +1,6 @@
 websocket
-
-0. Extract Database  and  sql map reduce utils, extract rendering enhance
+UI
+0. Extract rendering enhance
 1. weather node js, web socket
 2. geographic
 3. UI 

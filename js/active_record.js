@@ -48,7 +48,6 @@ ActiveRecord.dropTable = function(callback, errCallback) {
 
 ActiveRecord.where = function(conditions, callback, errCallback) {
     var self = this;
-
     var select = SQL.selectQuery(conditions);
     self._transaction(
             self._query("SELECT * FROM " + self.tableName + select.where + " " + select.order, select.values),

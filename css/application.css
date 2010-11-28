@@ -28,21 +28,28 @@ article#bapi #notification {
     color: red;
 }
 
-#tasks li {
+#tasks tr td.content {
+    cursor: pointer;
+    width: 300px;
+}
+
+#tasks tr td.buttons {
+    margin-left: 20px;
+}
+
+#tasks tr td.buttons span.button:hover {
+    background: gray;
     cursor: pointer;
 }
 
-#tasks li .button {
-    margin-left: 100px;
-}
-
-#tasks li .button:hover {
-    background: gray;
-}
-
-#tasks .done {
+#tasks tr.done td.content {
     color: rgba(0, 0, 0, 0.296875);
     text-decoration: line-through;
+}
+
+#tasks #past tr.new span.desc {
+    background: red;
+    color: white;
 }
 
 footer {

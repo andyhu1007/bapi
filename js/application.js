@@ -4,13 +4,14 @@ var Application = function() {
         this.warning = "article#notification .warning";
         this.add = "article#newtask #new";
         this.tasksArti = "article#tasks";
-        this.taskULs = this.tasksArti + " ul";
-        this.taskLIs = this.tasksArti + " li";
+        this.taskTBs = this.tasksArti + " table";
+        this.taskTRs = this.taskTBs + " tr";
+        this.taskTDContents = this.taskTRs + " td.content"
         this.taskEdis = this.tasksArti + " input";
         this.taskRmBts = this.tasksArti + " .remove";
 
-        this.todayTaskUL = this.tasksArti + " #today ul";
-        this.pastTaskUL = this.tasksArti + " #past ul";
+        this.todayTaskTB = this.tasksArti + " #today table";
+        this.pastTaskTB = this.tasksArti + " #past table";
     }
 
     Selector.apply(this);
@@ -23,14 +24,20 @@ var Application = function() {
         function refresh() {
             function _render(element) {
                 return element.addClass(element.dataset('task-state')).
-                        append($("<span class='desc'></span>").text(element.dataset('task-desc'))).
-                        append($("<input type='text' style='display:none;'/>").val(element.dataset('task-desc'))).
-                        append("<span class='button remove'>X</span>");
+                        append(
+                        $("<td class='content'></td>").
+                                append($("<span class='desc'></span>").text(element.dataset('task-desc'))).
+                                append($("<input type='text' style='display:none;'/>").val(element.dataset('task-desc')))
+                        ).
+                        append(
+                        $("<td class='buttons'></td>").
+                                append("<span class='button remove'>X</span>")
+                        );
             }
 
             function _list(tasks, target) {
                 $.each(tasks, function() {
-                    _render(DataAttrMapper.map($("<li></li>"), this)).appendTo($(target));
+                    _render(DataAttrMapper.map($("<tr></tr>"), this)).appendTo($(target));
                 });
             }
 
@@ -48,18 +55,18 @@ var Application = function() {
 
             function _refresh(tasks) {
                 var taskGroups = _groupTasks(tasks);
-                $(todayTaskUL).html("");
-                $(pastTaskUL).html("");
-                _list(taskGroups.today, todayTaskUL);
-                _list(taskGroups.past, pastTaskUL);
+                $(todayTaskTB).html("");
+                $(pastTaskTB).html("");
+                _list(taskGroups.today, todayTaskTB);
+                _list(taskGroups.past, pastTaskTB);
             }
 
             Task.where({order: "ORDER BY created_date, seq, id"}, _refresh);
         }
 
         function reorder() {
-            $(taskULs).each(function() {
-                $(this).find("li").each(function(index) {
+            $(taskTBs).each(function() {
+                $(this).find("tr").each(function(index) {
                     var task = DataAttrMapper.load(this, Task);
                     task.seq = index;
                     task.save();
@@ -69,7 +76,6 @@ var Application = function() {
 
         (function initDB() {
             if (window.openDatabase) {
-                Task.dropTable();
                 Task.createTable();
             } else {
                 displayWarning('Web Databases not supported');
@@ -82,23 +88,25 @@ var Application = function() {
                     if (evt.type == 'click') {
                         $(this).select();
                     } else if (13 == evt.keyCode) {
-                        Task.create({desc: $(add).val(), seq: $(todayTaskUL).find("li").length}, refresh, displayWarning);
+                        Task.create({desc: $(add).val(), seq: $(todayTaskTB).find("tr").length}, refresh, displayWarning);
                     }
                 });
 
-                $(taskULs).sortable({
+                $(taskTBs).sortable({
+                    items: 'tr',
                     update : function() {
                         reorder();
                         refresh();
                     }
                 });
 
-                $(taskLIs).live('click dblclick', function(evt) {
+                $(taskTDContents).live('click dblclick', function(evt) {
                     var self = this;
+                    var taskEle = $(this).parents('tr');
                     if (evt.type == 'click') {
-                        $(self).dataset('task-state', $(self).hasClass('done') ? "new" : "done");
-                        DataAttrMapper.load(self, Task).save(function() {
-                            $(self).toggleClass('new done');
+                        $(taskEle).dataset('task-state', $(taskEle).hasClass('done') ? "new" : "done");
+                        DataAttrMapper.load(taskEle, Task).save(function() {
+                            $(taskEle).toggleClass('new done');
                         }, displayWarning);
                     } else {
                         $(self).find("input").show().focus().select();
@@ -107,7 +115,7 @@ var Application = function() {
 
                 $(taskRmBts).live('click', function(evt) {
                     var self = this;
-                    var taskEle = $(self).parent();
+                    var taskEle = $(self).parents('tr');
                     DataAttrMapper.load(taskEle, Task).destroy(function() {
                         taskEle.remove();
                     }, displayWarning);
@@ -120,10 +128,10 @@ var Application = function() {
                         var self = this;
                         if (evt.type == 'keydown' && 13 != evt.keyCode) return;
 
-                        var taskEle = $(this).parent();
-                        taskEle.dataset('task-desc', $(this).val());
+                        var taskEle = $(this).parents('tr');
+                        taskEle.dataset('task-desc', $(self).val());
                         DataAttrMapper.load(taskEle, Task).save(function() {
-                            taskEle.children('.desc').text($(self).val());
+                            taskEle.find('.desc').text($(self).val());
                             $(self).hide();
                         }, displayWarning);
                     }
