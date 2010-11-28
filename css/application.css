@@ -46,8 +46,13 @@ article#bapi #notification {
     margin-left: 20px;
 }
 
-#tasks tr td.buttons span.button:hover {
+#tasks tr td.buttons span.button {
     background: gray;
+    color: white;
+}
+
+#tasks tr td.buttons span.button:hover {
+    background: black;
     cursor: pointer;
 }
 
