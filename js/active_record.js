@@ -22,22 +22,10 @@ ActiveRecord.asSuperOf = function(SubClass) {
 
 ActiveRecord.prototype.save = function(callback, errCallback) {
     var self = this;
-    var updates = columns2updates(self.columns);
+    var query = SQL.saveQuery(self);
     self._transaction(
-            self._query("UPDATE " + self.tableName + " SET " + updates.sets + " WHERE id = ?", updates.values),
+            self._query("UPDATE " + self.tableName + " SET " + query.clause + " WHERE id = ?", query.values),
             callback, errCallback);
-
-    function columns2updates(columns) {
-        var sets = new Array();
-        var values = new Array();
-        for (var column in columns) {
-            if ("id" == column) continue;
-            sets.push(column + " = ?");
-            values.push(self[column]);
-        }
-        values.push(self.id);
-        return {sets: sets.join(", "), values: values};
-    }
 };
 
 ActiveRecord.prototype.destroy = function(callback, errCallback) {
@@ -48,18 +36,9 @@ ActiveRecord.prototype.destroy = function(callback, errCallback) {
 ActiveRecord.createTable = function(callback, errCallback) {
     var self = this;
     self._transaction(
-            self._query("CREATE TABLE IF NOT EXISTS " + self.tableName + " (" + columns2cluase(self.columns) + ")"),
+            self._query("CREATE TABLE IF NOT EXISTS " + self.tableName + " (" + SQL.createTableQuery(self).clause + ")"),
             callback, errCallback
             );
-
-
-    function columns2cluase(columns) {
-        var columnTypes = new Array();
-        for (var column in columns) {
-            columnTypes.push(column + " " + columns[column]);
-        }
-        return columnTypes.join(", ");
-    }
 };
 
 ActiveRecord.dropTable = function(callback, errCallback) {
@@ -70,9 +49,9 @@ ActiveRecord.dropTable = function(callback, errCallback) {
 ActiveRecord.where = function(conditions, callback, errCallback) {
     var self = this;
 
-    var where = conditions2where(conditions.where);
+    var select = SQL.selectQuery(conditions);
     self._transaction(
-            self._query("SELECT * FROM " + self.tableName + where.clause + " " + conditions.order, where.params),
+            self._query("SELECT * FROM " + self.tableName + select.where + " " + select.order, select.values),
             function(tx, results) {
                 var records = new Array();
                 for (var i = 0; i < results.rows.length; i++) {
@@ -81,36 +60,16 @@ ActiveRecord.where = function(conditions, callback, errCallback) {
                 callback(records);
             }, errCallback);
 
-    function conditions2where(whereConditions) {
-        var whereClause = "";
-        var params = new Array();
-        for (var condition in whereConditions) {
-            whereClause += (condition + " = ? ");
-            params.push(whereConditions[condition]);
-        }
-        return {clause: ("" == whereClause ? "" : " WHERE " + whereClause)
-            , params: params}
-    }
+
 };
 
 ActiveRecord.create = function(params, callback, errCallback) {
     var self = this;
-    var inserts = params2inserts(params);
+    var insert = SQL.insertQuery(params);
     self._transaction(
-            self._query("INSERT INTO " + self.tableName + " (" + inserts.columns + ") VALUES (" + inserts.marks + ")", inserts.values),
+            self._query("INSERT INTO " + self.tableName + " (" + insert.clause.columns + ") VALUES (" + insert.clause.marks + ")", insert.values),
             callback, errCallback);
 
-    function params2inserts(params) {
-        var columns = new Array();
-        var marks = new Array();
-        var values = new Array();
-        for (var column in params) {
-            columns.push(column);
-            marks.push('?');
-            values.push(params[column]);
-        }
-        return {columns: columns.join(', '), marks: marks.join(', '), values: values}
-    }
 };
 
 ActiveRecord._query = function(clause, params) {
