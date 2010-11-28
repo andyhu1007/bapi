@@ -1,9 +1,9 @@
 var DataAttrMapper = {
-    map: function(element, object) {
-        var presetPre = object.constructor.dataAttrPre;
+    map: function(element, record) {
+        var presetPre = record.constructor.dataAttrPre;
         var keyPre = isBlank(presetPre) ? "" : presetPre + "-";
-        for (var key in object.constructor.columns) {
-            $(element).dataset(keyPre + key, object[key])
+        for (var key in record.constructor.columns) {
+            $(element).dataset(keyPre + key, record[key])
         }
         return $(element);
     },
@@ -11,11 +11,11 @@ var DataAttrMapper = {
     load: function(element, constructor) {
         var presetPre = constructor.dataAttrPre;
         var pattern = new RegExp(isBlank(presetPre) ? "^(.*)$" : "^" + presetPre + "\-(.*)$");
-        var object = new constructor();
+        var record = new constructor();
         var dataset = $(element).dataset();
         for (var key in dataset) {
-            object[pattern.exec(key)[1]] = dataset[key];
+            record[pattern.exec(key)[1]] = dataset[key];
         }
-        return object;
+        return record;
     }
 }

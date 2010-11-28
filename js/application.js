@@ -104,7 +104,7 @@ var Application = function() {
 
                 $(taskTDContents).live('click dblclick', function(evt) {
                     var self = this;
-                    var taskEle = $(this).parents('tr');
+                    var taskEle = $(self).parents('tr');
                     if (evt.type == 'click') {
                         $(taskEle).dataset('task-state', $(taskEle).hasClass('done') ? "new" : "done");
                         DataAttrMapper.load(taskEle, Task).save(function() {
@@ -131,7 +131,7 @@ var Application = function() {
                         var self = this;
                         if (evt.type == 'keydown' && 13 != evt.keyCode) return;
 
-                        var taskEle = $(this).parents('tr');
+                        var taskEle = $(self).parents('tr');
                         taskEle.dataset('task-desc', $(self).val());
                         DataAttrMapper.load(taskEle, Task).save(function() {
                             taskEle.find('.desc').text($(self).val());
