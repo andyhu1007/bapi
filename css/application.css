@@ -50,16 +50,32 @@ article#bapi #new {
     width: 520px;
 }
 
-article#bapi #import {
+#importer header {
+    color: gray;
+    margin: 10px 0;
+}
+
+#importer header:hover {
+    cursor: pointer;
+    color: black;
+}
+
+#importer #import {
     border: 10px dashed gray;
-    width: 100px;
+    width: 300px;
     height: 100px;
 }
 
-article#bapi #import:hover, article#bapi #import.hover {
+#importer #import p {
+    margin: 40px 0 0 50px;
+}
+
+#importer #import {
+    display: none;
+}
+
+#importer #import:hover, #importer #import.hover {
     border: 10px dashed black;
-    width: 100px;
-    height: 100px;
 }
 
 article#bapi #notification {

@@ -3,7 +3,9 @@ var Application = function() {
     function Selector() {
         this.warning = "article#notification .warning";
         this.newTask = "article#tasks #new";
-        this.importTasks = "article#tasks #import";
+        this.importer = "article#tasks #importer";
+        this.importerHeader = "article#tasks header";
+        this.importerBox = this.importer + " #import";
 
         this.tasksArti = "article#tasks";
         this.taskTBs = this.tasksArti + " table";
@@ -99,12 +101,16 @@ var Application = function() {
                     });
 
                     (function initImporter() {
-                        $(importTasks).bind('dragover dragend', function (evt) {
+                        $(importerHeader).click(function(evt) {
+                            $(importerBox).slideToggle('fast');
+                        });
+
+                        $(importerBox).bind('dragover dragend', function (evt) {
                             $(this).toggleClass('hover');
                             return false;
                         });
 
-                        document.querySelector(importTasks).ondrop = function(evt) {
+                        document.querySelector(importerBox).ondrop = function(evt) {
                             $(this).removeClass('hover');
                             var file = evt.dataTransfer.files[0],
                                     reader = new FileReader();
