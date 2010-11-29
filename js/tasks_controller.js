@@ -1,6 +1,6 @@
 var TasksController = {
     index: function(taskEleTag, callback, errCallback) {
-        Task.where({order: "ORDER BY created_date, seq, id"}, function(tasks) {
+        Task.where({order: "created_date, seq, id"}, function(tasks) {
             var taskEles = new Array();
             $.each(tasks, function() {
                 taskEles.push(DataAttrMapper.map($(taskEleTag), this));
@@ -10,8 +10,10 @@ var TasksController = {
     },
 
     create: function(params, callback, errCallback) {
-
-        Task.create(params, callback, errCallback);
+        Task.where("WHERE created_date = (date('now', 'localtime'))", function(tasks) {
+            params.seq = tasks.length;
+            Task.create(params, callback, errCallback);
+        }, errCallback);
     },
 
     update : function(taskEle, params, callback, errCallback) {

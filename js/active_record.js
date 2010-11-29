@@ -48,9 +48,15 @@ ActiveRecord.dropTable = function(callback, errCallback) {
 
 ActiveRecord.where = function(conditions, callback, errCallback) {
     var self = this;
-    var select = SQL.selectQuery(conditions);
+    var select = {clause: "", vlaues: []}
+    if ('string' == typeof(conditions)) {
+        select.clause = conditions;
+    } else {
+        select = SQL.selectQuery(conditions);
+    }
+
     self._transaction(
-            self._query("SELECT * FROM " + self.tableName + select.where + " " + select.order, select.values),
+            self._query("SELECT * FROM " + self.tableName + " " + select.clause, select.values),
             function(tx, results) {
                 var records = new Array();
                 for (var i = 0; i < results.rows.length; i++) {
@@ -58,8 +64,6 @@ ActiveRecord.where = function(conditions, callback, errCallback) {
                 }
                 callback(records);
             }, errCallback);
-
-
 };
 
 ActiveRecord.create = function(params, callback, errCallback) {

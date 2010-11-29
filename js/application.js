@@ -98,7 +98,7 @@ var Application = function() {
                     if (evt.type == 'click') {
                         $(this).select();
                     } else if (13 == evt.keyCode) {
-                        TasksController.create({desc: $(newTask).val(), seq: $(todayTaskTB).find("tr").length}, refresh, displayWarning);
+                        TasksController.create({desc: $(newTask).val()}, refresh, displayWarning);
                     }
                 });
 
@@ -114,7 +114,7 @@ var Application = function() {
                     reader.onload = function (event) {
                         $.each(event.target.result.split("\n"), function() {
                             if('' != $.trim(this)) {
-                                TasksController.create({desc: this, seq: $(todayTaskTB).find("tr").length}, refresh, displayWarning);
+                                TasksController.create({desc: this}, refresh, displayWarning);
                             }
                         });
                     };

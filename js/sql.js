@@ -28,19 +28,24 @@ var SQL = {
                 values.push(whereCondition[con]);
             }
             var clause = clauses.join(' AND ');
-            return {where: ("" == clause ? "" : " WHERE " + clause)
+            return {where: ("" == clause ? "" : prefixMap.where + " " + clause)
                 ,values: values};
         }
 
-        var select = {where: "", values: []}
+        var prefixMap = {order: "ORDER BY", where: "WHERE"}
+        var select = {clause: "", where: "", values: [], order: ""}
         for (var con in conditions) {
             if ('where' == con) {
                 var whereQuery = where(conditions[con]);
                 for (var con in whereQuery) {
                     select[con] = whereQuery[con];
                 }
-            } else select[con] = conditions[con];
+            } else {
+                select[con] = ("" == conditions[con] ? "" : prefixMap[con] + " " + conditions[con]);
+            }
         }
+
+        select.clause = select.where + " " + select.order
         return select;
     },
 
