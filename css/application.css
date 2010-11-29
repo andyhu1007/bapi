@@ -34,7 +34,7 @@ article#manual {
 article#manual header:hover {
     cursor: pointer;
     color: black;
-    text-decoration:underline;
+    text-decoration: underline;
 }
 
 article#manual section {
@@ -85,7 +85,7 @@ article#manual section span {
 #importer header:hover, #map header:hover {
     cursor: pointer;
     color: black;
-    text-decoration:underline;
+    text-decoration: underline;
 }
 
 #importer #import {
@@ -119,6 +119,11 @@ article#bapi #notification {
 #tasks tr td.content {
     cursor: pointer;
     width: 300px;
+}
+
+#tasks tr td.content input {
+    display: none;
+    width: 290px;
 }
 
 #tasks tr td.locality {

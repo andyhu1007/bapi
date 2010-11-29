@@ -12,7 +12,7 @@ var Geo = {
         self.map = new google.maps.Map(mapCanvas, myOptions);
     },
 
-    locate : function(locality, callback) {
+    locate : function(locality, callback, errCallback) {
         var self = Geo;
         self.geocoder.geocode({ 'address': locality}, function(results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
@@ -24,7 +24,7 @@ var Geo = {
                 });
                 callback(loc);
             } else {
-                alert("Could not find the locality: " + status);
+                errCallback("Nothing Found: " + status);
             }
         });
     }

@@ -1,5 +1,10 @@
-save query string and latlng info
+remove alert
+hide when edit task
+
+refactor geo
+
 geo current city highlight
+
 websocket
 
 

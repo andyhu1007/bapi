@@ -59,7 +59,7 @@ var Application = function() {
                             append(
                             $("<td class='content'></td>").
                                     append($("<span class='desc'></span>").text(element.dataset('task-desc'))).
-                                    append($("<input type='text' style='display:none;'/>").val(element.dataset('task-desc')))
+                                    append($("<input type='text'/>").val(element.dataset('task-desc')))
                             ).
                             append(locality()).
                             append(
@@ -164,6 +164,9 @@ var Application = function() {
                                         $(newTaskLocality).dataset('task-lat', location.lat());
                                         $(newTaskLocality).dataset('task-lng', location.lng());
                                         $(newTaskLocalityFinder).val('Submit');
+                                    }, function(msg) {
+                                        $(newTaskLocality).val(msg);
+                                        $(newTaskLocality).select();
                                     });
                                 }
                             } else postNew();
@@ -220,6 +223,7 @@ var Application = function() {
                                     }, displayWarning);
                         }
                         else {
+                            $(self).children('.desc').hide();
                             $(self).find("input").show().focus().select();
                         }
                     });
@@ -234,7 +238,9 @@ var Application = function() {
                             var taskEle = $(self).parents('tr');
 
                             TasksController.update(taskEle, {'task-desc': $(self).val()}, function() {
-                                taskEle.find('.desc').text($(self).val());
+                                var taskDesc = taskEle.find('.desc');
+                                taskDesc.text($(self).val());
+                                taskDesc.show();
                                 $(self).hide();
                             }, displayWarning);
                         }
