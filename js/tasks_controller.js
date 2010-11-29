@@ -1,12 +1,12 @@
 var TasksController = {
-    index: function(taskEleTag, callback) {
+    index: function(taskEleTag, callback, errCallback) {
         Task.where({order: "ORDER BY created_date, seq, id"}, function(tasks) {
             var taskEles = new Array();
             $.each(tasks, function() {
                 taskEles.push(DataAttrMapper.map($(taskEleTag), this));
             });
             callback(taskEles);
-        });
+        }, errCallback);
     },
 
     create: function(params, callback, errCallback) {
