@@ -31,7 +31,7 @@ article#manual {
     margin: 20px 30px;
 }
 
-article#manual header:hover{
+article#manual header:hover {
     cursor: pointer;
     color: black;
 }
@@ -48,6 +48,18 @@ article#manual section span {
 article#bapi #new {
     margin-top: 30px;
     width: 520px;
+}
+
+article#bapi #import {
+    border: 10px dashed gray;
+    width: 100px;
+    height: 100px;
+}
+
+article#bapi #import:hover, article#bapi #import.hover {
+    border: 10px dashed black;
+    width: 100px;
+    height: 100px;
 }
 
 article#bapi #notification {

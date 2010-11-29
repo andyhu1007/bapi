@@ -2,7 +2,9 @@ var Application = function() {
 
     function Selector() {
         this.warning = "article#notification .warning";
-        this.add = "article#tasks #new";
+        this.newTask = "article#tasks #new";
+        this.importTasks = "article#tasks #import";
+
         this.tasksArti = "article#tasks";
         this.taskTBs = this.tasksArti + " table";
         this.taskTRs = this.taskTBs + " tr";
@@ -92,13 +94,33 @@ var Application = function() {
                     }
                 });
 
-                $(add).bind('click keydown', function(evt) {
+                $(newTask).bind('click keydown', function(evt) {
                     if (evt.type == 'click') {
                         $(this).select();
                     } else if (13 == evt.keyCode) {
-                        TasksController.create({desc: $(add).val(), seq: $(todayTaskTB).find("tr").length}, refresh, displayWarning);
+                        TasksController.create({desc: $(newTask).val(), seq: $(todayTaskTB).find("tr").length}, refresh, displayWarning);
                     }
                 });
+
+                $(importTasks).bind('dragover dragend', function (evt) {
+                    $(this).toggleClass('hover');
+                    return false;
+                });
+
+                document.querySelector(importTasks).ondrop = function(evt) {
+                    $(this).removeClass('hover');
+                    var file = evt.dataTransfer.files[0],
+                            reader = new FileReader();
+                    reader.onload = function (event) {
+                        $.each(event.target.result.split("\n"), function() {
+                            if('' != $.trim(this)) {
+                                TasksController.create({desc: this, seq: $(todayTaskTB).find("tr").length}, refresh, displayWarning);
+                            }
+                        });
+                    };
+                    reader.readAsBinaryString(file);
+                    return false;
+                };
 
                 $(taskTDContents).live('click dblclick', function(evt) {
                     var self = this;
