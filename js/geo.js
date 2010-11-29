@@ -16,12 +16,13 @@ var Geo = {
         var self = Geo;
         self.geocoder.geocode({ 'address': locality}, function(results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
-                self.map.setCenter(results[0].geometry.location);
+                var loc = results[0].geometry.location;
+                self.map.setCenter(loc);
                 var marker = new google.maps.Marker({
                     map: self.map,
-                    position: results[0].geometry.location
+                    position: loc
                 });
-                callback();
+                callback(loc);
             } else {
                 alert("Could not find the locality: " + status);
             }

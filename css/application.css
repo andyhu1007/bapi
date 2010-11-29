@@ -97,7 +97,12 @@ article#bapi #notification {
 
 #tasks tr td.content {
     cursor: pointer;
-    width: 500px;
+    width: 300px;
+}
+
+#tasks tr td.locality {
+    cursor: pointer;
+    width: 200px;
 }
 
 #tasks tr td.buttons {

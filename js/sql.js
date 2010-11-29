@@ -28,7 +28,7 @@ var SQL = {
                 values.push(whereCondition[con]);
             }
             var clause = clauses.join(' AND ');
-            return {where: ("" == clause ? "" : prefixMap.where + " " + clause)
+            return {where: (isBlank(clause) ? "" : prefixMap.where + " " + clause)
                 ,values: values};
         }
 
@@ -41,7 +41,7 @@ var SQL = {
                     select[con] = whereQuery[con];
                 }
             } else {
-                select[con] = ("" == conditions[con] ? "" : prefixMap[con] + " " + conditions[con]);
+                select[con] = (isBlank(conditions[con]) ? "" : prefixMap[con] + " " + conditions[con]);
             }
         }
 

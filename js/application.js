@@ -47,12 +47,19 @@ var Application = function() {
         (function initUI() {
             function refresh() {
                 function _render(element) {
+                    function locality() {
+                        var address = element.dataset('task-locality');
+                        address = isBlank(address) ? '' : '@' + address;
+                        return $("<td class='locality'></td>").append($("<address></address>").text(address))
+                    }
+
                     return element.addClass(element.dataset('task-state')).
                             append(
                             $("<td class='content'></td>").
                                     append($("<span class='desc'></span>").text(element.dataset('task-desc'))).
                                     append($("<input type='text' style='display:none;'/>").val(element.dataset('task-desc')))
                             ).
+                            append(locality()).
                             append(
                             $("<td class='buttons'></td>").
                                     append("<span class='button remove'>X</span>")
@@ -100,11 +107,21 @@ var Application = function() {
                 (function initCreate() {
                     (function initNew() {
                         function postNew() {
-                            if ("" == $.trim($(newTaskDesc).val())) {
+                            if (isBlank($(newTaskDesc).val())) {
                                 alert("Please input description for task");
                                 return;
                             }
-                            TasksController.create({desc: $(newTaskDesc).val()}, refresh, displayWarning);
+                            function params() {
+                                var paramValues = {desc: $(newTaskDesc).val()};
+                                var hasAddress = !isBlank($(newTaskLocality).val()) && 'Submit' == $(newTaskLocalityFinder).val();
+                                paramValues.locality = hasAddress ? $(newTaskLocality).val() : '';
+                                paramValues.lat = hasAddress ? $(newTaskLocality).dataset('task-lat') : '';
+                                paramValues.lng = hasAddress ? $(newTaskLocality).dataset('task-lng') : '';
+                                return paramValues;
+                            }
+
+                            TasksController.create(params(),
+                                    refresh, displayWarning);
                         }
 
                         $(newTaskDesc).bind('click keydown', function(evt) {
@@ -116,19 +133,29 @@ var Application = function() {
                         $(newTaskLocality).bind('click keydown', function(evt) {
                             if (evt.type == 'click') {
                                 $(this).select();
-                            } else
-                                $(newTaskLocalityFinder).val('Find');
+                            } else {
+                                if (229 == evt.keyCode) return;
+                                if (13 != evt.keyCode) {
+                                    $(newTaskLocalityFinder).val('Find');
+                                }
+                                else {
+                                    codeAddress();
+                                }
+                            }
                         });
 
-                        $(newTaskLocalityFinder).bind('click', function codeAddress() {
-                            var self = this;
-                            if ('Find' == $(self).val()) {
+                        $(newTaskLocalityFinder).bind('click', codeAddress);
+
+                        function codeAddress() {
+                            if ('Find' == $(newTaskLocalityFinder).val()) {
                                 var locality = $(newTaskLocality).val();
-                                Geo.locate(locality, function() {
-                                    $(self).val('Submit');
+                                Geo.locate(locality, function(location) {
+                                    $(newTaskLocality).dataset('task-lat', location.lat());
+                                    $(newTaskLocality).dataset('task-lng', location.lng());
+                                    $(newTaskLocalityFinder).val('Submit');
                                 });
                             } else postNew();
-                        });
+                        }
                     })();
 
                     (function initImporter() {
