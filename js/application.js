@@ -3,6 +3,12 @@ var Application = function() {
     function Selector() {
         this.warning = "article#notification .warning";
         this.newTask = "article#tasks #new";
+        this.newTaskDesc = this.newTask + " #desc";
+        this.newTaskLocality = this.newTask + " #locality";
+        this.newTaskLocalityFinder = this.newTask + " #getGeo";
+
+        this.mapCanvas = "#map_canvas";
+
         this.importer = "article#tasks #importer";
         this.importerHeader = "article#tasks header";
         this.importerBox = this.importer + " #import";
@@ -20,6 +26,7 @@ var Application = function() {
         this.manualArti = "article#manual"
         this.manualHeader = this.manualArti + " header";
         this.manualSec = this.manualArti + " section";
+
     }
 
     Selector.apply(this);
@@ -90,15 +97,39 @@ var Application = function() {
 
             (function initCRUD() {
 
-
                 (function initCreate() {
-                    $(newTask).bind('click keydown', function(evt) {
-                        if (evt.type == 'click') {
-                            $(this).select();
-                        } else if (13 == evt.keyCode) {
-                            TasksController.create({desc: $(newTask).val()}, refresh, displayWarning);
+                    (function initNew() {
+                        function postNew() {
+                            if ("" == $.trim($(newTaskDesc).val())) {
+                                alert("Please input description for task");
+                                return;
+                            }
+                            TasksController.create({desc: $(newTaskDesc).val()}, refresh, displayWarning);
                         }
-                    });
+
+                        $(newTaskDesc).bind('click keydown', function(evt) {
+                            if (evt.type == 'click') {
+                                $(this).select();
+                            } else if (13 == evt.keyCode) postNew();
+                        });
+
+                        $(newTaskLocality).bind('click keydown', function(evt) {
+                            if (evt.type == 'click') {
+                                $(this).select();
+                            } else
+                                $(newTaskLocalityFinder).val('Find');
+                        });
+
+                        $(newTaskLocalityFinder).bind('click', function codeAddress() {
+                            var self = this;
+                            if ('Find' == $(self).val()) {
+                                var locality = $(newTaskLocality).val();
+                                Geo.locate(locality, function() {
+                                    $(self).val('Submit');
+                                });
+                            } else postNew();
+                        });
+                    })();
 
                     (function initImporter() {
                         $(importerHeader).click(function(evt) {
@@ -186,6 +217,9 @@ var Application = function() {
             })();
 
             refresh();
+
+            Geo.initialize({lat: 39.9042140, lng: 116.4074130}, document.querySelector(mapCanvas))
+
         })();
     }
 

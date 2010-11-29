@@ -45,9 +45,16 @@ article#manual section span {
     margin-right: 10px;
 }
 
-article#bapi #new {
+#new {
     margin-top: 30px;
-    width: 520px;
+}
+
+#new #desc {
+    width: 300px;
+}
+
+#new #locality {
+    width: 140px;
 }
 
 #importer header {
