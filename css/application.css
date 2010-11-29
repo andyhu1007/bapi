@@ -141,6 +141,10 @@ article#bapi #notification {
     text-decoration: line-through;
 }
 
+#tasks #past {
+    margin-top: 40px;
+}
+
 #tasks #past tr.new span.desc {
     background: red;
     color: white;

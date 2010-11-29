@@ -11,7 +11,7 @@ var Application = function() {
         this.mapHeader = this.map + " header";
         this.mapCanvas = this.map + " #map_canvas";
 
-        this.importer = "article#tasks #importer";
+        this.importer = "#importer";
         this.importerHeader = this.importer + " header";
         this.importerBox = this.importer + " #import";
 
@@ -133,11 +133,12 @@ var Application = function() {
                         });
 
                         $(mapHeader).click(function(evt) {
-                            $(mapCanvas).toggle();
+                            $(mapCanvas).slideToggle();
                         });
 
                         $(newTaskLocality).bind('click keydown', function(evt) {
                             if (evt.type == 'click') {
+                                $(mapCanvas).slideDown();
                                 $(this).select();
                             } else {
                                 if (229 == evt.keyCode) return;
@@ -154,12 +155,17 @@ var Application = function() {
 
                         function codeAddress() {
                             if ('Find' == $(newTaskLocalityFinder).val()) {
+                                $(mapCanvas).slideDown();
                                 var locality = $(newTaskLocality).val();
-                                Geo.locate(locality, function(location) {
-                                    $(newTaskLocality).dataset('task-lat', location.lat());
-                                    $(newTaskLocality).dataset('task-lng', location.lng());
-                                    $(newTaskLocalityFinder).val('Submit');
-                                });
+                                if (isBlank(locality)) {
+                                    $(newTaskLocality).focus();
+                                } else {
+                                    Geo.locate(locality, function(location) {
+                                        $(newTaskLocality).dataset('task-lat', location.lat());
+                                        $(newTaskLocality).dataset('task-lng', location.lng());
+                                        $(newTaskLocalityFinder).val('Submit');
+                                    });
+                                }
                             } else postNew();
                         }
                     })();
