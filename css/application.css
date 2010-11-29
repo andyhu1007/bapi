@@ -34,6 +34,7 @@ article#manual {
 article#manual header:hover {
     cursor: pointer;
     color: black;
+    text-decoration:underline;
 }
 
 article#manual section {
@@ -46,7 +47,7 @@ article#manual section span {
 }
 
 #new {
-    margin-top: 30px;
+    margin-top: 10px;
 }
 
 #new #desc {
@@ -54,17 +55,33 @@ article#manual section span {
 }
 
 #new #locality {
-    width: 140px;
+    width: 150px;
+}
+
+#map #map_canvas {
+    position: relative;
+    left: 0;
+    top: 20px;
+    width: 520px;
+    height: 300px;
+}
+
+#importer, #map {
+    margin-top: 15px;
+}
+
+#importer header, #map header {
+    color: gray;
 }
 
 #importer header {
-    color: gray;
-    margin: 10px 0;
+    margin-bottom: 5px;
 }
 
-#importer header:hover {
+#importer header:hover, #map header:hover {
     cursor: pointer;
     color: black;
+    text-decoration:underline;
 }
 
 #importer #import {

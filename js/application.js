@@ -7,10 +7,12 @@ var Application = function() {
         this.newTaskLocality = this.newTask + " #locality";
         this.newTaskLocalityFinder = this.newTask + " #getGeo";
 
-        this.mapCanvas = "#map_canvas";
+        this.map = "#map";
+        this.mapHeader = this.map + " header";
+        this.mapCanvas = this.map + " #map_canvas";
 
         this.importer = "article#tasks #importer";
-        this.importerHeader = "article#tasks header";
+        this.importerHeader = this.importer + " header";
         this.importerBox = this.importer + " #import";
 
         this.tasksArti = "article#tasks";
@@ -108,7 +110,8 @@ var Application = function() {
                     (function initNew() {
                         function postNew() {
                             if (isBlank($(newTaskDesc).val())) {
-                                alert("Please input description for task");
+                                $(newTaskDesc).val($(newTaskDesc).attr('placeholder'));
+                                $(newTaskDesc).select();
                                 return;
                             }
                             function params() {
@@ -120,14 +123,17 @@ var Application = function() {
                                 return paramValues;
                             }
 
-                            TasksController.create(params(),
-                                    refresh, displayWarning);
+                            TasksController.create(params(), refresh, displayWarning);
                         }
 
                         $(newTaskDesc).bind('click keydown', function(evt) {
                             if (evt.type == 'click') {
                                 $(this).select();
                             } else if (13 == evt.keyCode) postNew();
+                        });
+
+                        $(mapHeader).click(function(evt) {
+                            $(mapCanvas).toggle();
                         });
 
                         $(newTaskLocality).bind('click keydown', function(evt) {
