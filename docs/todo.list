@@ -1,17 +1,13 @@
-remove alert
-hide when edit task
-
-refactor geo
-
+link to map
 geo current city highlight
 
 websocket
 
+clear past
+move undone past to today
+
 
 1. weather node js, web socket
-2. geographic
-3. drag and drop in bin
 
 11. Http Method
-12. task controller
 13. scroll to load (google map)

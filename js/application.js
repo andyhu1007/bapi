@@ -95,7 +95,7 @@ var Application = function() {
                 }
 
                 TasksController.index("<tr></tr>", _refresh);
-
+                Geo.init(document.querySelector(mapCanvas), {lat: 39.9042140, lng: 116.4074130}, displayWarning);
             }
 
             function reorder() {
@@ -262,9 +262,6 @@ var Application = function() {
             })();
 
             refresh();
-
-            Geo.initialize({lat: 39.9042140, lng: 116.4074130}, document.querySelector(mapCanvas))
-
         })();
     }
 
