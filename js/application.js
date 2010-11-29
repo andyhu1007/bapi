@@ -112,11 +112,11 @@ var Application = function() {
                     var file = evt.dataTransfer.files[0],
                             reader = new FileReader();
                     reader.onload = function (event) {
+                        var tasksParams = new Array();
                         $.each(event.target.result.split("\n"), function() {
-                            if('' != $.trim(this)) {
-                                TasksController.create({desc: this}, refresh, displayWarning);
-                            }
+                            if ('' != $.trim(this)) tasksParams.push({desc: this});
                         });
+                        TasksController.create(tasksParams, refresh, displayWarning);
                     };
                     reader.readAsBinaryString(file);
                     return false;

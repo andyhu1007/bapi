@@ -11,8 +11,17 @@ var TasksController = {
 
     create: function(params, callback, errCallback) {
         Task.where("WHERE created_date = (date('now', 'localtime'))", function(tasks) {
-            params.seq = tasks.length;
-            Task.create(params, callback, errCallback);
+            function createInstance(params, index) {
+                params.seq = index;
+                Task.create(params, callback, errCallback);
+            }
+
+            var nextSeq = tasks.length;
+            if (params instanceof Array) {
+                $.each(params, function(index) {
+                    createInstance(this, nextSeq + index);
+                });
+            } else createInstance(params, nextSeq);
         }, errCallback);
     },
 
