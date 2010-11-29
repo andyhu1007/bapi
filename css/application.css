@@ -66,8 +66,12 @@ article#manual section span {
     height: 300px;
 }
 
-#importer, #map {
+#map {
     margin-top: 15px;
+}
+
+#importer {
+    margin-top: 40px;
 }
 
 #importer header, #map header {
@@ -142,7 +146,7 @@ article#bapi #notification {
 }
 
 #tasks #past {
-    margin-top: 40px;
+    margin-top: 20px;
 }
 
 #tasks #past tr.new span.desc {
