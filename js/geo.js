@@ -4,7 +4,7 @@ var Geo = {
         self.geocoder = new google.maps.Geocoder();
         var geoLatlng = new google.maps.LatLng(latlng.lat, latlng.lng);
         var myOptions = {
-            zoom: 8,
+            zoom: 10,
             center: geoLatlng,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         }
