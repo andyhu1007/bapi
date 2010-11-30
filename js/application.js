@@ -18,12 +18,16 @@ var Application = function() {
         this.tasksArti = "article#tasks";
         this.taskTBs = this.tasksArti + " table";
         this.taskTRs = this.taskTBs + " tr";
-        this.taskTDContents = this.taskTRs + " td.content"
+        this.taskTDContents = this.taskTRs + " td.content";
+        this.taskTDLocality = this.taskTRs + " td.locality";
+        this.taskTDLocalityAddr = this.taskTDLocality + " address";
         this.taskEdis = this.taskTBs + " input";
         this.taskRmBts = this.tasksArti + " .remove";
 
         this.todayTaskTB = this.tasksArti + " #today table";
         this.pastTaskTB = this.tasksArti + " #past table";
+        this.pastUndoneTRs = this.pastTaskTB + " tr.new";
+        this.pastUndoneContents = this.pastUndoneTRs + " td.content";
 
         this.manualArti = "article#manual"
         this.manualHeader = this.manualArti + " header";
@@ -74,7 +78,7 @@ var Application = function() {
                     });
                 }
 
-                function _groupTaskEles(taskEles) {
+                function _group(taskEles) {
                     var taskEleGroups = {today: new Array(), past: new Array};
                     $.each(taskEles, function() {
                         if ((new Date().format("yyyy-mm-dd")) == this.dataset('task-created_date')) {
@@ -87,7 +91,7 @@ var Application = function() {
                 }
 
                 function _refresh(taskEles) {
-                    var taskEleGroups = _groupTaskEles(taskEles);
+                    var taskEleGroups = _group(taskEles);
                     $(todayTaskTB).html("");
                     $(pastTaskTB).html("");
                     _list(taskEleGroups.today, todayTaskTB);
@@ -190,7 +194,7 @@ var Application = function() {
                             reader.onload = function (event) {
                                 var tasksParams = new Array();
                                 $.each(event.target.result.split("\n"), function() {
-                                    if (!isBlank(this)) tasksParams.push({desc: this, locality: '', lat: '', lng: ''});
+                                    if (!isBlank(this.toString())) tasksParams.push({desc: this, locality: '', lat: '', lng: ''});
                                 });
                                 TasksController.create(tasksParams, refresh, displayWarning);
                             };
@@ -251,6 +255,18 @@ var Application = function() {
                         update : function() {
                             reorder();
                         }
+                    });
+                })();
+
+                (function initShow() {
+                    $(taskTDLocalityAddr).live('click', function(evt) {
+                        var taskEle = $(this).parents('tr');
+                        var locality = taskEle.dataset('task-locality');
+                        if (!isBlank(locality)) Geo.locate(locality);
+                    });
+
+                    $(pastUndoneContents).live('mouseover mouseout', function(evt){
+                        $(this).find('.desc').toggleClass('hover');  
                     });
                 })();
             })();

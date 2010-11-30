@@ -121,14 +121,24 @@ article#bapi #notification {
     width: 300px;
 }
 
+#tasks tr td.content:hover {
+    color: blue;
+    text-decoration: line-through;
+}
+
 #tasks tr td.content input {
     display: none;
     width: 290px;
 }
 
 #tasks tr td.locality {
-    cursor: pointer;
     width: 200px;
+    cursor: pointer;
+}
+
+#tasks tr td.locality address:hover {
+    color: blue;
+    text-decoration: underline;
 }
 
 #tasks tr td.buttons {
@@ -138,11 +148,12 @@ article#bapi #notification {
 #tasks tr td.buttons span.button {
     background: gray;
     color: white;
+    cursor: pointer;
 }
 
 #tasks tr td.buttons span.button:hover {
-    background: black;
-    cursor: pointer;
+    color: blue;
+    background: white;
 }
 
 #tasks tr.done td.content {
@@ -157,6 +168,11 @@ article#bapi #notification {
 #tasks #past tr.new span.desc {
     background: red;
     color: white;
+}
+
+#tasks #past tr.new span.hover {
+    background: white;
+    color: blue;
 }
 
 footer {
