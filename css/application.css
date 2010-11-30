@@ -100,7 +100,6 @@ article#tasks #today header, article#tasks #past header {
 #tasks tr {
     background: rgba(74, 30, 70, 0.0898438);
     -webkit-transition: opacity 0.4s ease-in;
-    color: #FBE762;
     font-weight: bold;
 }
 
@@ -110,6 +109,7 @@ article#tasks #today header, article#tasks #past header {
 
 #tasks td.content {
     cursor: pointer;
+    color: #FBE762;
     width: 300px;
 }
 
@@ -130,6 +130,7 @@ article#tasks #today header, article#tasks #past header {
 
 #tasks td.locality address a, #tasks td.showLocality {
     cursor: pointer;
+    color: #BED364;
 }
 
 #tasks td.locality address a {
@@ -138,14 +139,13 @@ article#tasks #today header, article#tasks #past header {
 }
 
 #tasks td.showLocality:hover, #tasks td.locality address a:hover {
-    /* TODO */
-    /*color: blue;*/
+    color: #FBE762;
+    -webkit-transition: color 0.2s linear;
     text-decoration: underline;    
 }
 
 #tasks td.locality address.hl, #tasks td.locality address.hl a {
-    /* Todo */
-    /*color: #FBE762;*/
+    color: #FBE762;
 }
 
 #tasks tr.done td.content, #tasks tr.done td.showLocality, #tasks tr.done td.locality address a {
