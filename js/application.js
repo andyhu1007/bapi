@@ -190,7 +190,7 @@ var Application = function() {
                             reader.onload = function (event) {
                                 var tasksParams = new Array();
                                 $.each(event.target.result.split("\n"), function() {
-                                    if ('' != $.trim(this)) tasksParams.push({desc: this});
+                                    if (!isBlank(this)) tasksParams.push({desc: this, locality: '', lat: '', lng: ''});
                                 });
                                 TasksController.create(tasksParams, refresh, displayWarning);
                             };
