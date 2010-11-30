@@ -135,21 +135,23 @@ article#bapi #notification {
     width: 200px;
 }
 
-#tasks tr td.locality address span {
-    cursor: pointer;    
+#tasks tr td.locality address span.addr {
+    cursor: pointer;
 }
 
-#tasks tr td.locality address span:hover, #tasks tr td.locality address.hl span:hover {
-    color: blue;
-    text-decoration: underline;
-}
-
-#tasks tr td.locality address.hl span {
+#tasks tr td.locality address.hl span.addr, #tasks tr td.locality address.hl a {
     color: red;
 }
 
 #tasks tr td.locality address a {
-    margin-left: 8px;
+    margin-left: 2px;
+    color: black;
+    text-decoration: none;
+}
+
+#tasks tr td.locality address span.addr:hover, #tasks tr td.locality address.hl span.addr:hover, #tasks tr td.locality address a:hover {
+    color: blue;
+    text-decoration: underline;
 }
 
 #tasks tr td.buttons {

@@ -80,9 +80,9 @@ var Application = function() {
                     function locality() {
                         var address = element.dataset('task-locality');
                         address = isBlank(address) ? '' : '@' + address;
-                        var directionLink = isBlank(address) ? '' : $("<a target='_blank'>Go</a>");
+                        var directionLink = isBlank(address) ? '' : $("<span>--</span><a target='_blank'>Go</a>");
                         return $("<td class='locality'></td>").append($("<address></address>").
-                                append($("<span></span>").text(address)).
+                                append($("<span class='addr'></span>").text(address)).
                                 append(directionLink));
 
                     }
