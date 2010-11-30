@@ -133,16 +133,23 @@ article#bapi #notification {
 
 #tasks tr td.locality {
     width: 200px;
-    cursor: pointer;
 }
 
-#tasks tr td.locality address:hover {
+#tasks tr td.locality address span {
+    cursor: pointer;    
+}
+
+#tasks tr td.locality address span:hover, #tasks tr td.locality address.hl span:hover {
     color: blue;
     text-decoration: underline;
 }
 
-#tasks tr td.locality address.hl {
+#tasks tr td.locality address.hl span {
     color: red;
+}
+
+#tasks tr td.locality address a {
+    margin-left: 8px;
 }
 
 #tasks tr td.buttons {

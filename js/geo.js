@@ -43,6 +43,32 @@ var Geo = {
         });
     },
 
+    address : function(position, callback) {
+        var self = Geo;
+        self.locate({'location' : self.toGoogleLatlng(position)}, function(addressComponents) {
+            var accepts = ['street_number', 'route', 'sublocality', 'locality', 'country'];
+            var addressNames = {long: "", short: ""};
+            $.each(addressComponents, function() {
+                var self = this;
+                isIntersect(accepts, self.types, function() {
+                    addressNames.long += " " + self.long_name;
+                    addressNames.short += " " + self.short_name;
+                });
+            });
+
+            callback(addressNames);
+
+            function isIntersect(arrayA, arrayB, callback) {
+                $.each(arrayA, function() {
+                    var a = this;
+                    $.each(arrayB, function() {
+                        if (a.toString() == this.toString()) callback();
+                    });
+                });
+            }
+        });
+    },
+
     _mark : function(latlng, title) {
         var self = Geo;
         self.map.setCenter(latlng);
@@ -90,6 +116,13 @@ var Geo = {
     update : function(callback) {
         navigator.geolocation.getCurrentPosition(function(position) {
             callback({lat: position.coords.latitude, lng: position.coords.longitude})
+        });
+    },
+
+    currentAddress : function(callback) {
+        var self = Geo;
+        navigator.geolocation.getCurrentPosition(function(position) {
+            self.address(position, callback);
         });
     },
 

@@ -68,12 +68,23 @@ var Application = function() {
                 }
             }
 
+            function renderDirections(currentAddress) {
+                $(taskTDLocality).each(function(){
+                    var target = $(this).parents('tr').dataset('task-locality');
+                    $(this).find('a').attr('href', 'http://maps.google.com/maps?q=from:' + currentAddress.long + '+to:' + target);
+                });
+            }
+
             function refresh() {
                 function _render(element) {
                     function locality() {
                         var address = element.dataset('task-locality');
                         address = isBlank(address) ? '' : '@' + address;
-                        return $("<td class='locality'></td>").append($("<address></address>").text(address))
+                        var directionLink = isBlank(address) ? '' : $("<a target='_blank'>Go</a>");
+                        return $("<td class='locality'></td>").append($("<address></address>").
+                                append($("<span></span>").text(address)).
+                                append(directionLink));
+
                     }
 
                     return element.addClass(element.dataset('task-state')).
@@ -118,6 +129,7 @@ var Application = function() {
                 TasksController.index("<tr></tr>", function(taskEles) {
                     _refresh(taskEles);
                     Geo.update(hlNearbyTasks);
+                    Geo.currentAddress(renderDirections);
                 });
             }
 
