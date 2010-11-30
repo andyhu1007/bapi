@@ -183,7 +183,7 @@ var Application = function() {
                                 if (isBlank(locality)) {
                                     $(newTaskLocality).focus();
                                 } else {
-                                    Geo.locate(locality, function(location) {
+                                    Geo.locate({'address': locality}, function(location) {
                                         $(newTaskLocality).dataset('task-lat', location.lat());
                                         $(newTaskLocality).dataset('task-lng', location.lng());
                                         $(newTaskLocalityFinder).val('Submit');
@@ -281,7 +281,7 @@ var Application = function() {
                     $(taskTDLocalityAddr).live('click', function(evt) {
                         var taskEle = $(this).parents('tr');
                         var locality = taskEle.dataset('task-locality');
-                        if (!isBlank(locality)) Geo.locate(locality, function() {
+                        if (!isBlank(locality)) Geo.locate({'address': locality}, function() {
                         }, displayWarning);
                     });
 
@@ -300,7 +300,7 @@ var Application = function() {
             refresh();
 
             (function initMap() {
-                Geo.init(document.querySelector(mapCanvas), {lat: 39.9042140, lng: 116.4074130}, displayWarning);
+                Geo.init(document.querySelector(mapCanvas), new google.maps.LatLng(39.9042140, 116.4074130), displayWarning);
                 Geo.startWatch(hlNearbyTasks, displayWarning);
             })();
         })();

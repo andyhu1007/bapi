@@ -3,41 +3,40 @@ var Geo = {
         var self = Geo;
         self.mapCanvas = mapCanvas;
         self.defaultLatlng = defaultLatlng;
+        self.geocoder = new google.maps.Geocoder();
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function(position) {
-                self._init(position);
+                self._init(self.toGoogleLatlng(position));
             });
         } else {
-            self.show(mapCanvas, defaultLatlng);
+            self._init(defaultLatlng);
             errCallback('Geo not support!')
         }
     },
 
-    _init : function(position) {
+    _init : function(latlng) {
         var self = Geo;
-        self.show(self.mapCanvas, self.toGoogleLatlng(position));
-    },
-
-    show : function(mapCanvas, latlng) {
-        var self = Geo;
-        self.geocoder = new google.maps.Geocoder();
         var myOptions = {
             zoom: 10,
             center: latlng,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         }
-
-        self.map = new google.maps.Map(mapCanvas, myOptions);
+        self.map = new google.maps.Map(self.mapCanvas, myOptions);
     },
 
-    locate : function(locality, callback, errCallback) {
+    locate : function(request, callback, errCallback) {
         var self = Geo;
-        self.geocoder.geocode({ 'address': locality}, function(results, status) {
+        self.geocoder.geocode(request, function(results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
-                var loc = results[0].geometry.location;
-                self._mark(loc, locality);
-                callback(loc);
+                var result = results[0];
+                if (!isBlank(request['address'])) {
+                    var loc = result.geometry.location;
+                    self._mark(loc, request['address']);
+                    callback(loc);
+                } else if (!isBlank(request['location'])) {
+                    callback(result.address_components);
+                }
             } else {
                 errCallback("Nothing Found: " + status);
             }
@@ -95,6 +94,6 @@ var Geo = {
     },
 
     toGoogleLatlng : function (position) {
-        return new google.maps.LatLng(position.coords.latitude, position.coords.longitude)
+        return new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
     }
 }
