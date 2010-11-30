@@ -69,6 +69,14 @@ var Geo = {
         return R * c;
     },
 
+    direction : function(directionRequest, directionPanel) {
+        var self = Geo;
+        var service = new google.maps.DirectionsService();
+        service.route({origin: directionRequest.origin, destination: directionRequest.destination, travelMode: directionRequest.travelMode}, function(directionsResult, directionsStatus) {
+            new google.maps.DirectionsRenderer({map: self.map, panel: directionPanel, directions: directionsResult});
+        });
+    },
+
     startWatch : function(callback, errCallback) {
         var self = Geo;
         var watchId = navigator.geolocation.watchPosition(function(position) {
