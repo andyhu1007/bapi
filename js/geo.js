@@ -80,6 +80,12 @@ var Geo = {
 
     },
 
+    update : function(callback) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            callback({lat: position.coords.latitude, lng: position.coords.longitude})
+        });
+    },
+
     toGoogleLatlng : function (position) {
         return new google.maps.LatLng(position.coords.latitude, position.coords.longitude)
     }
