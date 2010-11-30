@@ -149,9 +149,14 @@ article#bapi #notification {
     text-decoration: none;
 }
 
-#tasks tr td.locality address span.addr:hover, #tasks tr td.locality address.hl span.addr:hover, #tasks tr td.locality address a:hover {
+#tasks tr td.locality address span.addr:hover, #tasks tr td.locality address.hl span.addr:hover, #tasks tr td.locality address a:hover, #tasks tr.done td.locality address a:hover {
     color: blue;
     text-decoration: underline;
+}
+
+#tasks tr.done, #tasks tr.done td.locality address a, #tasks tr.done td.locality address.hl span.addr {
+    color: rgba(0, 0, 0, 0.296875);
+    text-decoration: line-through;
 }
 
 #tasks tr td.buttons {
@@ -167,11 +172,6 @@ article#bapi #notification {
 #tasks tr td.buttons span.button:hover {
     color: blue;
     background: white;
-}
-
-#tasks tr.done td.content {
-    color: rgba(0, 0, 0, 0.296875);
-    text-decoration: line-through;
 }
 
 #tasks #past {
