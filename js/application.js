@@ -19,6 +19,7 @@ var Application = function() {
         this.taskTBs = this.tasksArti + " table";
         this.taskTRs = this.taskTBs + " tr";
         this.taskTDContents = this.taskTRs + " td.content";
+        this.taskTDShowLocality = this.taskTRs + " td.showLocality";
         this.taskTDLocality = this.taskTRs + " td.locality";
         this.taskTDLocalityAddr = this.taskTDLocality + " address";
         this.taskEdis = this.taskTBs + " input";
@@ -29,11 +30,6 @@ var Application = function() {
         this.pastTaskTB = this.tasksArti + " #past table";
         this.pastUndoneTRs = this.pastTaskTB + " tr.new";
         this.pastUndoneContents = this.pastUndoneTRs + " td.content";
-
-        this.manualArti = "article#manual"
-        this.manualHeader = this.manualArti + " header";
-        this.manualSec = this.manualArti + " section";
-
     }
 
     Selector.apply(this);
@@ -80,10 +76,8 @@ var Application = function() {
                     function locality() {
                         var address = element.dataset('task-locality');
                         address = isBlank(address) ? '' : address;
-                        var directionLink = isBlank(address) ? '' : $("<span>--</span><a target='_blank'>Go</a>");
-                        return $("<td class='locality'></td>").append($("<address></address>").
-                                append($("<span class='addr'></span>").text(address)).
-                                append(directionLink));
+                        return $("<td class='locality'></td>").
+                                append($("<address></address>").append($("<a target='_blank'></a>").text(address)));
 
                     }
 
@@ -93,7 +87,7 @@ var Application = function() {
                                     append($("<span class='desc'></span>").text(element.dataset('task-desc'))).
                                     append($("<input type='text'/>").val(element.dataset('task-desc')))
                             ).
-                            append($("<td><span>@</span></td>")).
+                            append($("<td class='showLocality'><span>@</span></td>")).
                             append(locality()).
                             append(
                             $("<td class='buttons'></td>").
@@ -291,7 +285,7 @@ var Application = function() {
                 })();
 
                 (function initShow() {
-                    $(taskTDLocalityAddr).live('click', function(evt) {
+                    $(taskTDShowLocality).live('click', function(evt) {
                         var taskEle = $(this).parents('tr');
                         var locality = taskEle.dataset('task-locality');
                         if (!isBlank(locality)) Geo.locate({'address': locality}, function() {
@@ -302,12 +296,6 @@ var Application = function() {
                         $(this).find('.desc').toggleClass('hover');
                     });
                 })();
-            })();
-
-            (function initManual() {
-                $(manualHeader).click(function(evt) {
-                    $(manualSec).slideToggle('slow');
-                })
             })();
 
             refresh();

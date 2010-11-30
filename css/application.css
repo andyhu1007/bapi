@@ -1,10 +1,10 @@
 body {
     font-family: 'Gill Sans', Calibri, 'DejaVu Sans', sans-serif;
+    color: white;
 }
 
 header.horizontal > * {
     float: left;
-    color: #BED364;
     text-shadow: black 1px 1px 0px;
 }
 
@@ -14,9 +14,9 @@ article#bapi {
     border-radius: 6px;
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
-    border: 1px solid #58807C;
-    -webkit-box-shadow: 2px 2px 2px 2px #58807C;
-    -moz-box-shadow: 2px 2px 2px 2px #58807C;
+    border: 1px solid #98A09C;
+    -webkit-box-shadow: 2px 2px 2px 2px #98A09C;
+    -moz-box-shadow: 2px 2px 2px 2px #98A09C;
     padding: 20px;
     background: #78909C -webkit-gradient(linear, 0% 0%, 0% 100%, from(#78909C), to(#51545B));
 }
@@ -29,29 +29,11 @@ article#tasks {
     margin: 0 30px;
 }
 
-article#tasks section#today header h4 {
-    color: #FBE762;
+article#tasks #today header, article#tasks #past header {
+    text-shadow: black 1px 1px 0px;
 }
 
-article#manual {
-    color: gray;
-    margin: 20px 30px;
-}
-
-article#manual header:hover {
-    cursor: pointer;
-    color: black;
-    text-decoration: underline;
-}
-
-article#manual section {
-    display: none;
-    margin-top: 10px;
-}
-
-article#manual section span {
-    margin-right: 10px;
-}
+/* new task*/
 
 #new {
     margin-top: 10px;
@@ -82,7 +64,7 @@ article#manual section span {
 }
 
 #importer header, #map header {
-    color: gray;
+    color: #BED364;
 }
 
 #importer header {
@@ -91,7 +73,7 @@ article#manual section span {
 
 #importer header:hover, #map header:hover {
     cursor: pointer;
-    color: black;
+    color: #FBE762;
     text-decoration: underline;
 }
 
@@ -99,83 +81,85 @@ article#manual section span {
     border: 10px dashed gray;
     width: 300px;
     height: 100px;
+    color: gray;
+    display: none;
 }
+
+#importer #import:hover, #importer #import.hover {
+    color: white;
+    border: 10px dashed white;
+}
+
 
 #importer #import p {
     margin: 40px 0 0 50px;
 }
 
-#importer #import {
-    display: none;
-}
-
-#importer #import:hover, #importer #import.hover {
-    border: 10px dashed black;
-}
-
-article#bapi #notification {
-    margin-top: 10px;
-    border-top: 1px dashed #ccc;
-    clear: both;
-}
-
-.warning {
-    color: red;
-}
+/* Tasks */
 
 #tasks tr {
     background: rgba(74, 30, 70, 0.0898438);
     -webkit-transition: opacity 0.4s ease-in;
-    color: white;
+    color: #FBE762;
+    font-weight: bold;
 }
 
 #tasks tr:hover {
-    background: rgba(190, 211, 100, 0.2);
+    background: rgba(190, 211, 100, 0.1);
 }
 
-#tasks tr td.content {
+#tasks td.content {
     cursor: pointer;
     width: 300px;
 }
 
-#tasks tr td.content:hover {
+#tasks td.content:hover {
     color: rgba(0, 0, 0, 0.296875);
     -webkit-transition: color 0.2s linear;
     text-decoration: line-through;
 }
 
-#tasks tr td.content input {
+#tasks td.content input {
     display: none;
     width: 290px;
 }
 
-#tasks tr td.locality {
+#tasks td.locality {
     width: 200px;
 }
 
-#tasks tr td.locality address span.addr {
+#tasks td.locality address a, #tasks td.showLocality {
     cursor: pointer;
 }
 
-#tasks tr td.locality address.hl span.addr, #tasks tr td.locality address.hl a {
-    color: red;
-}
-
-#tasks tr td.locality address a {
+#tasks td.locality address a {
     margin-left: 2px;
     text-decoration: none;
 }
 
-#tasks tr td.locality address span.addr:hover, #tasks tr td.locality address.hl span.addr:hover, #tasks tr td.locality address a:hover, #tasks tr.done td.locality address a:hover {
-    color: #FBE762;
-    -webkit-transition: color 0.2s linear;
-    text-decoration: underline;
+#tasks td.showLocality:hover, #tasks td.locality address a:hover {
+    /* TODO */
+    /*color: blue;*/
+    text-decoration: underline;    
 }
 
-#tasks tr.done, #tasks tr.done td.locality address a, #tasks tr.done td.locality address.hl span.addr {
+#tasks td.locality address.hl, #tasks td.locality address.hl a {
+    /* Todo */
+    /*color: #FBE762;*/
+}
+
+#tasks tr.done td.content, #tasks tr.done td.showLocality, #tasks tr.done td.locality address a {
     color: rgba(0, 0, 0, 0.296875);
     text-decoration: line-through;
 }
+
+/* Past Tasks */
+
+#tasks #past {
+    margin-top: 20px;
+}
+
+/* Buttons */
 
 #tasks tr td.buttons {
     margin-left: 20px;
@@ -192,22 +176,20 @@ article#bapi #notification {
     -webkit-transition: color 0.2s linear;
 }
 
-#tasks #past {
-    margin-top: 20px;
-}
-
-#tasks #past tr.new span.desc {
-    background: red;
-    color: white;
-}
-
-#tasks #past tr.new span.hover {
-    background: white;
-    color: blue;
-}
+/* Others */
 
 footer {
     color: #ccc;
     margin-top: 10px;
     border-top: 1px dashed #ccc;
+}
+
+#notification {
+    margin-top: 10px;
+    border-top: 1px dashed #ccc;
+    clear: both;
+}
+
+.warning {
+    color: red;
 }
