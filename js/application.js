@@ -79,7 +79,7 @@ var Application = function() {
                 function _render(element) {
                     function locality() {
                         var address = element.dataset('task-locality');
-                        address = isBlank(address) ? '' : '@' + address;
+                        address = isBlank(address) ? '' : address;
                         var directionLink = isBlank(address) ? '' : $("<span>--</span><a target='_blank'>Go</a>");
                         return $("<td class='locality'></td>").append($("<address></address>").
                                 append($("<span class='addr'></span>").text(address)).
@@ -93,6 +93,7 @@ var Application = function() {
                                     append($("<span class='desc'></span>").text(element.dataset('task-desc'))).
                                     append($("<input type='text'/>").val(element.dataset('task-desc')))
                             ).
+                            append($("<td><span>@</span></td>")).
                             append(locality()).
                             append(
                             $("<td class='buttons'></td>").

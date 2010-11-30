@@ -1,9 +1,11 @@
 body {
-    font-family: "Lucida Grande", Verdana;
+    font-family: 'Gill Sans', Calibri, 'DejaVu Sans', sans-serif;
 }
 
 header.horizontal > * {
     float: left;
+    color: #BED364;
+    text-shadow: black 1px 1px 0px;
 }
 
 article#bapi {
@@ -12,18 +14,23 @@ article#bapi {
     border-radius: 6px;
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
-    border: 1px solid #999;
-    -webkit-box-shadow: 2px 2px 2px 2px #ddd;
-    -moz-box-shadow: 2px 2px 2px 2px #ddd;
+    border: 1px solid #58807C;
+    -webkit-box-shadow: 2px 2px 2px 2px #58807C;
+    -moz-box-shadow: 2px 2px 2px 2px #58807C;
     padding: 20px;
+    background: #78909C -webkit-gradient(linear, 0% 0%, 0% 100%, from(#78909C), to(#51545B));
 }
 
 #title {
-    margin: 40px;
+    margin: 30px 0;
 }
 
 article#tasks {
     margin: 0 30px;
+}
+
+article#tasks section#today header h4 {
+    color: #FBE762;
 }
 
 article#manual {
@@ -116,13 +123,24 @@ article#bapi #notification {
     color: red;
 }
 
+#tasks tr {
+    background: rgba(74, 30, 70, 0.0898438);
+    -webkit-transition: opacity 0.4s ease-in;
+    color: white;
+}
+
+#tasks tr:hover {
+    background: rgba(190, 211, 100, 0.2);
+}
+
 #tasks tr td.content {
     cursor: pointer;
     width: 300px;
 }
 
 #tasks tr td.content:hover {
-    color: blue;
+    color: rgba(0, 0, 0, 0.296875);
+    -webkit-transition: color 0.2s linear;
     text-decoration: line-through;
 }
 
@@ -145,12 +163,12 @@ article#bapi #notification {
 
 #tasks tr td.locality address a {
     margin-left: 2px;
-    color: black;
     text-decoration: none;
 }
 
 #tasks tr td.locality address span.addr:hover, #tasks tr td.locality address.hl span.addr:hover, #tasks tr td.locality address a:hover, #tasks tr.done td.locality address a:hover {
-    color: blue;
+    color: #FBE762;
+    -webkit-transition: color 0.2s linear;
     text-decoration: underline;
 }
 
@@ -170,8 +188,8 @@ article#bapi #notification {
 }
 
 #tasks tr td.buttons span.button:hover {
-    color: blue;
-    background: white;
+    color: red;
+    -webkit-transition: color 0.2s linear;
 }
 
 #tasks #past {
