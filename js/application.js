@@ -25,6 +25,7 @@ var Application = function() {
         this.taskRmBts = this.tasksArti + " .remove";
 
         this.todayTaskTB = this.tasksArti + " #today table";
+        this.todayUndoneTRs = this.todayTaskTB + " tr.new";
         this.pastTaskTB = this.tasksArti + " #past table";
         this.pastUndoneTRs = this.pastTaskTB + " tr.new";
         this.pastUndoneContents = this.pastUndoneTRs + " td.content";
@@ -99,7 +100,6 @@ var Application = function() {
                 }
 
                 TasksController.index("<tr></tr>", _refresh);
-                Geo.init(document.querySelector(mapCanvas), {lat: 39.9042140, lng: 116.4074130}, displayWarning);
             }
 
             function reorder() {
@@ -265,8 +265,8 @@ var Application = function() {
                         if (!isBlank(locality)) Geo.locate(locality);
                     });
 
-                    $(pastUndoneContents).live('mouseover mouseout', function(evt){
-                        $(this).find('.desc').toggleClass('hover');  
+                    $(pastUndoneContents).live('mouseover mouseout', function(evt) {
+                        $(this).find('.desc').toggleClass('hover');
                     });
                 })();
             })();
@@ -278,6 +278,27 @@ var Application = function() {
             })();
 
             refresh();
+
+            (function initMap() {
+                function hlNearbyTasks(currentLatlng) {
+                    $(todayUndoneTRs).each(function() {
+                        if (!isBlank($(this).dataset('task-locality'))) {
+                            if(Geo.distance(currentLatlng, toLatlng(this)) < 10) {
+                                $(this).find('address').addClass('hl')
+                            }
+                        }else {
+                            $(this).find('address').removeClass('hl');
+                        }
+                    });
+
+                    function toLatlng(taskEle) {
+                        return {lat: $(taskEle).dataset('task-lat'), lng: $(taskEle).dataset('task-lng')}
+                    }
+                }
+                
+                Geo.init(document.querySelector(mapCanvas), {lat: 39.9042140, lng: 116.4074130}, displayWarning);
+                Geo.startWatch(hlNearbyTasks, displayWarning);
+            })();
         })();
     }
 

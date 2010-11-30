@@ -141,6 +141,10 @@ article#bapi #notification {
     text-decoration: underline;
 }
 
+#tasks tr td.locality address.hl {
+    color: red;
+}
+
 #tasks tr td.buttons {
     margin-left: 20px;
 }
