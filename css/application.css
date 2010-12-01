@@ -25,11 +25,11 @@ article#footprint {
     margin: 30px 80px;
 }
 
-article#tasks {
+article#main {
     margin: 0 30px;
 }
 
-article#tasks #today header, article#tasks #past header {
+article#main #footprints header {
     text-shadow: black 1px 1px 0px;
 }
 
@@ -97,81 +97,75 @@ article#tasks #today header, article#tasks #past header {
 
 /* Tasks */
 
-#tasks tr {
+#main tr {
     background: rgba(74, 30, 70, 0.0898438);
     -webkit-transition: opacity 0.4s ease-in;
     font-weight: bold;
 }
 
-#tasks tr:hover {
+#main tr:hover {
     background: rgba(190, 211, 100, 0.1);
 }
 
-#tasks td.content {
+#main td.content {
     cursor: pointer;
     color: #FBE762;
     width: 300px;
 }
 
-#tasks td.content:hover {
+#main td.content:hover {
     color: rgba(0, 0, 0, 0.296875);
     -webkit-transition: color 0.2s linear;
     text-decoration: line-through;
 }
 
-#tasks td.content input {
+#main td.content input {
     display: none;
     width: 290px;
 }
 
-#tasks td.locality {
+#main td.locality {
     width: 200px;
 }
 
-#tasks td.locality address a, #tasks td.showLocality {
+#main td.locality address a, #main td.showLocality {
     cursor: pointer;
     color: #BED364;
 }
 
-#tasks td.locality address a {
+#main td.locality address a {
     margin-left: 2px;
     text-decoration: none;
 }
 
-#tasks td.showLocality:hover, #tasks td.locality address a:hover {
+#main td.showLocality:hover, #main td.locality address a:hover {
     color: #FBE762;
     -webkit-transition: color 0.2s linear;
     text-decoration: underline;    
 }
 
-#tasks td.locality address.hl, #tasks td.locality address.hl a {
+#main td.locality address.hl, #main td.locality address.hl a {
     color: #FBE762;
 }
 
-#tasks tr.done td.content, #tasks tr.done td.showLocality, #tasks tr.done td.locality address a {
+#main tr.done td.content, #main tr.done td.showLocality, #main tr.done td.locality address a {
     color: rgba(0, 0, 0, 0.296875);
     text-decoration: line-through;
 }
 
-/* Past Tasks */
-
-#tasks #past {
-    margin-top: 20px;
-}
-
 /* Buttons */
 
-#tasks tr td.buttons {
+#main tr td.buttons {
     margin-left: 20px;
 }
 
-#tasks tr td.buttons span.button {
+#main tr td.buttons span.button {
     background: gray;
     color: white;
     cursor: pointer;
 }
 
-#tasks tr td.buttons span.button:hover {
+#main tr td.buttons span.button:hover {
     color: red;
     -webkit-transition: color 0.2s linear;
 }

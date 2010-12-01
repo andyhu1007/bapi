@@ -2,7 +2,7 @@ var Application = function() {
 
     function Selector() {
         this.warning = "article#notification .warning";
-        this.newTask = "article#tasks #new";
+        this.newTask = "article#main #new";
         this.newTaskDesc = this.newTask + " #desc";
         this.newTaskLocality = this.newTask + " #locality";
         this.newTaskLocalityFinder = this.newTask + " #getGeo";
@@ -15,21 +15,16 @@ var Application = function() {
         this.importerHeader = this.importer + " header";
         this.importerBox = this.importer + " #import";
 
-        this.tasksArti = "article#tasks";
-        this.taskTBs = this.tasksArti + " table";
-        this.taskTRs = this.taskTBs + " tr";
+        this.tasksSection = "article#main #footprints";
+        this.taskTB = this.tasksSection + " table";
+        this.taskTRs = this.taskTB + " tr";
+        this.undoneTRs = this.taskTB + " tr.new";
         this.taskTDContents = this.taskTRs + " td.content";
         this.taskTDShowLocality = this.taskTRs + " td.showLocality";
         this.taskTDLocality = this.taskTRs + " td.locality";
         this.taskTDLocalityAddr = this.taskTDLocality + " address";
-        this.taskEdis = this.taskTBs + " input";
-        this.taskRmBts = this.tasksArti + " .remove";
-
-        this.todayTaskTB = this.tasksArti + " #today table";
-        this.todayUndoneTRs = this.todayTaskTB + " tr.new";
-        this.pastTaskTB = this.tasksArti + " #past table";
-        this.pastUndoneTRs = this.pastTaskTB + " tr.new";
-        this.pastUndoneContents = this.pastUndoneTRs + " td.content";
+        this.taskEdis = this.taskTB + " input";
+        this.taskRmBts = this.tasksSection + " .remove";
     }
 
     Selector.apply(this);
@@ -49,7 +44,7 @@ var Application = function() {
 
         (function initUI() {
             function hlNearbyTasks(currentLatlng) {
-                $(todayUndoneTRs).each(function() {
+                $(undoneTRs).each(function() {
                     if (!isBlank($(this).dataset('task-locality'))) {
                         if (Geo.distance(currentLatlng, toLatlng(this)) < 10) {
                             $(this).find('address').addClass('hl')
@@ -101,24 +96,9 @@ var Application = function() {
                     });
                 }
 
-                function _group(taskEles) {
-                    var taskEleGroups = {today: new Array(), past: new Array};
-                    $.each(taskEles, function() {
-                        if ((new Date().format("yyyy-mm-dd")) == this.dataset('task-created_date')) {
-                            taskEleGroups.today.push(this);
-                        } else {
-                            taskEleGroups.past.push(this);
-                        }
-                    });
-                    return taskEleGroups;
-                }
-
                 function _refresh(taskEles) {
-                    var taskEleGroups = _group(taskEles);
-                    $(todayTaskTB).html("");
-                    $(pastTaskTB).html("");
-                    _list(taskEleGroups.today, todayTaskTB);
-                    _list(taskEleGroups.past, pastTaskTB);
+                    $(taskTB).html("");
+                    _list(taskEles, taskTB);
                 }
 
                 TasksController.index("<tr></tr>", function(taskEles) {
@@ -129,9 +109,7 @@ var Application = function() {
             }
 
             function reorder() {
-                $(taskTBs).each(function() {
-                    TasksController.updateOrder($(this).find("tr"));
-                });
+                TasksController.updateOrder($(taskTRs));
             }
 
             (function initCRUD() {
@@ -276,7 +254,7 @@ var Application = function() {
                         }
                     });
 
-                    $(taskTBs).sortable({
+                    $(taskTB).sortable({
                         items: 'tr',
                         update : function() {
                             reorder();
@@ -292,9 +270,6 @@ var Application = function() {
                         }, displayWarning);
                     });
 
-                    $(pastUndoneContents).live('mouseover mouseout', function(evt) {
-                        $(this).find('.desc').toggleClass('hover');
-                    });
                 })();
             })();
 
