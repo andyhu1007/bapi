@@ -90,19 +90,11 @@ var Application = function() {
                             );
                 }
 
-                function _list(stepEles, target) {
-                    $.each(stepEles, function() {
-                        _render(this).appendTo($(target));
-                    });
-                }
-
-                function _refresh(stepEles) {
-                    $(stepTB).html("");
-                    _list(stepEles, stepTB);
-                }
-
                 StepsController.index("<tr></tr>", function(stepEles) {
-                    _refresh(stepEles);
+                    $(stepTB).html("");
+                    $.each(stepEles, function() {
+                        _render(this).appendTo($(stepTB));
+                    });
                     Geo.update(hlNearbySteps);
                     Geo.currentAddress(renderDirections);
                 });

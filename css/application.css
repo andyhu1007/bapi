@@ -49,7 +49,7 @@ article#main #footprints header {
 
 #map #map_canvas {
     position: relative;
-    left: 10px;
+    left: 9px;
     top: 20px;
     width: 520px;
     height: 300px;
