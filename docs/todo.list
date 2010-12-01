@@ -1,6 +1,4 @@
-remove past
-
-clear past
+set radius
 
 move undone past to today
 
@@ -9,8 +7,6 @@ full test
 document description
 
 test data
-
-set radius
 
 safari
 

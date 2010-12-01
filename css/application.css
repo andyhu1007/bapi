@@ -22,7 +22,7 @@ article#footprint {
 }
 
 #title {
-    margin: 30px 80px;
+    margin: 30px 85px;
 }
 
 article#main {
@@ -40,16 +40,16 @@ article#main #footprints header {
 }
 
 #new #desc {
-    width: 300px;
+    width: 295px;
 }
 
 #new #locality {
-    width: 150px;
+    width: 183px;
 }
 
 #map #map_canvas {
     position: relative;
-    left: 0;
+    left: 10px;
     top: 20px;
     width: 520px;
     height: 300px;
@@ -97,75 +97,76 @@ article#main #footprints header {
 
 /* Steps */
 
-#main tr {
+#footprints tr {
     background: rgba(74, 30, 70, 0.0898438);
     -webkit-transition: opacity 0.4s ease-in;
     font-weight: bold;
+    line-height: 1.5em;
 }
 
-#main tr:hover {
+#footprints tr:hover {
     background: rgba(190, 211, 100, 0.1);
 }
 
-#main td.content {
+#footprints td.content {
     cursor: pointer;
     color: #FBE762;
     width: 300px;
 }
 
-#main td.content:hover {
+#footprints td.content:hover {
     color: rgba(0, 0, 0, 0.296875);
     -webkit-transition: color 0.2s linear;
     text-decoration: line-through;
 }
 
-#main td.content input {
+#footprints td.content input {
     display: none;
     width: 290px;
 }
 
-#main td.locality {
+#footprints td.locality {
     width: 200px;
 }
 
-#main td.locality address a, #main td.showLocality {
+#footprints td.locality address a, #footprints td.showLocality {
     cursor: pointer;
     color: #BED364;
 }
 
-#main td.locality address a {
+#footprints td.locality address a {
     margin-left: 2px;
     text-decoration: none;
 }
 
-#main td.showLocality:hover, #main td.locality address a:hover {
+#footprints td.showLocality:hover, #footprints td.locality address a:hover {
     color: #FBE762;
     -webkit-transition: color 0.2s linear;
     text-decoration: underline;    
 }
 
-#main td.locality address.hl, #main td.locality address.hl a {
+#footprints td.locality address.hl, #footprints td.locality address.hl a {
     color: #FBE762;
 }
 
-#main tr.done td.content, #main tr.done td.showLocality, #main tr.done td.locality address a {
+#footprints tr.done td.content, #footprints tr.done td.showLocality, #footprints tr.done td.locality address a {
     color: rgba(0, 0, 0, 0.296875);
     text-decoration: line-through;
 }
 
 /* Buttons */
 
-#main tr td.buttons {
+#footprints tr td.buttons {
     margin-left: 20px;
 }
 
-#main tr td.buttons span.button {
+#footprints tr td.buttons span.button {
     background: gray;
     color: white;
     cursor: pointer;
 }
 
-#main tr td.buttons span.button:hover {
+#footprints tr td.buttons span.button:hover {
     color: red;
     -webkit-transition: color 0.2s linear;
 }

@@ -124,7 +124,7 @@ var Application = function() {
                             }
                             function params() {
                                 var paramValues = {desc: $(newStepDesc).val()};
-                                var hasAddress = !isBlank($(newStepLocality).val()) && 'Submit' == $(newStepLocalityFinder).val();
+                                var hasAddress = !isBlank($(newStepLocality).val()) && 'Add' == $(newStepLocalityFinder).val();
                                 paramValues.locality = hasAddress ? $(newStepLocality).val() : '';
                                 paramValues.lat = hasAddress ? $(newStepLocality).dataset('step-lat') : '';
                                 paramValues.lng = hasAddress ? $(newStepLocality).dataset('step-lng') : '';
@@ -151,7 +151,7 @@ var Application = function() {
                             } else {
                                 if (229 == evt.keyCode) return;
                                 if (13 != evt.keyCode) {
-                                    $(newStepLocalityFinder).val('Find');
+                                    $(newStepLocalityFinder).val('Go');
                                 }
                                 else {
                                     codeAddress();
@@ -162,7 +162,7 @@ var Application = function() {
                         $(newStepLocalityFinder).bind('click', codeAddress);
 
                         function codeAddress() {
-                            if ('Find' == $(newStepLocalityFinder).val()) {
+                            if ('Go' == $(newStepLocalityFinder).val()) {
                                 $(mapCanvas).slideDown();
                                 var locality = $(newStepLocality).val();
                                 if (isBlank(locality)) {
@@ -171,7 +171,7 @@ var Application = function() {
                                     Geo.locate({'address': locality}, function(location) {
                                         $(newStepLocality).dataset('step-lat', location.lat());
                                         $(newStepLocality).dataset('step-lng', location.lng());
-                                        $(newStepLocalityFinder).val('Submit');
+                                        $(newStepLocalityFinder).val('Add');
                                     }, function(msg) {
                                         $(newStepLocality).val(msg);
                                         $(newStepLocality).select();
