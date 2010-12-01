@@ -144,9 +144,11 @@ var Application = function() {
                             $(mapCanvas).slideToggle();
                         });
 
-                        $(newStepLocality).bind('click', function(evt) {
+                        $(newStepLocality).bind('click keydown', function(evt) {
+                            if (evt.type == 'click') {
+                                $(this).select();
+                            }
                             $(mapCanvas).slideDown();
-                            $(this).select();
                             $(newStepLocalityFinder).val('Go');
                         });
 
