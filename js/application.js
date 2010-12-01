@@ -2,10 +2,10 @@ var Application = function() {
 
     function Selector() {
         this.warning = "article#notification .warning";
-        this.newTask = "article#main #new";
-        this.newTaskDesc = this.newTask + " #desc";
-        this.newTaskLocality = this.newTask + " #locality";
-        this.newTaskLocalityFinder = this.newTask + " #getGeo";
+        this.newStep = "article#main #new";
+        this.newStepDesc = this.newStep + " #desc";
+        this.newStepLocality = this.newStep + " #locality";
+        this.newStepLocalityFinder = this.newStep + " #getGeo";
 
         this.map = "#map";
         this.mapHeader = this.map + " header";
@@ -15,16 +15,16 @@ var Application = function() {
         this.importerHeader = this.importer + " header";
         this.importerBox = this.importer + " #import";
 
-        this.tasksSection = "article#main #footprints";
-        this.taskTB = this.tasksSection + " table";
-        this.taskTRs = this.taskTB + " tr";
-        this.undoneTRs = this.taskTB + " tr.new";
-        this.taskTDContents = this.taskTRs + " td.content";
-        this.taskTDShowLocality = this.taskTRs + " td.showLocality";
-        this.taskTDLocality = this.taskTRs + " td.locality";
-        this.taskTDLocalityAddr = this.taskTDLocality + " address";
-        this.taskEdis = this.taskTB + " input";
-        this.taskRmBts = this.tasksSection + " .remove";
+        this.stepsSection = "article#main #footprints";
+        this.stepTB = this.stepsSection + " table";
+        this.stepTRs = this.stepTB + " tr";
+        this.undoneTRs = this.stepTB + " tr.new";
+        this.stepTDContents = this.stepTRs + " td.content";
+        this.stepTDShowLocality = this.stepTRs + " td.showLocality";
+        this.stepTDLocality = this.stepTRs + " td.locality";
+        this.stepTDLocalityAddr = this.stepTDLocality + " address";
+        this.stepEdis = this.stepTB + " input";
+        this.stepRmBts = this.stepsSection + " .remove";
     }
 
     Selector.apply(this);
@@ -36,16 +36,16 @@ var Application = function() {
 
         (function initDB() {
             if (window.openDatabase) {
-                Task.createTable();
+                Step.createTable();
             } else {
                 displayWarning('Web Databases not supported');
             }
         })();
 
         (function initUI() {
-            function hlNearbyTasks(currentLatlng) {
+            function hlNearbySteps(currentLatlng) {
                 $(undoneTRs).each(function() {
-                    if (!isBlank($(this).dataset('task-locality'))) {
+                    if (!isBlank($(this).dataset('step-locality'))) {
                         if (Geo.distance(currentLatlng, toLatlng(this)) < 10) {
                             $(this).find('address').addClass('hl')
                         }
@@ -54,14 +54,14 @@ var Application = function() {
                     }
                 });
 
-                function toLatlng(taskEle) {
-                    return {lat: $(taskEle).dataset('task-lat'), lng: $(taskEle).dataset('task-lng')}
+                function toLatlng(stepEle) {
+                    return {lat: $(stepEle).dataset('step-lat'), lng: $(stepEle).dataset('step-lng')}
                 }
             }
 
             function renderDirections(currentAddress) {
-                $(taskTDLocality).each(function(){
-                    var target = $(this).parents('tr').dataset('task-locality');
+                $(stepTDLocality).each(function(){
+                    var target = $(this).parents('tr').dataset('step-locality');
                     $(this).find('a').attr('href', 'http://maps.google.com/maps?q=from:' + currentAddress.long + '+to:' + target);
                 });
             }
@@ -69,18 +69,18 @@ var Application = function() {
             function refresh() {
                 function _render(element) {
                     function locality() {
-                        var address = element.dataset('task-locality');
+                        var address = element.dataset('step-locality');
                         address = isBlank(address) ? '' : address;
                         return $("<td class='locality'></td>").
                                 append($("<address></address>").append($("<a target='_blank'></a>").text(address)));
 
                     }
 
-                    return element.addClass(element.dataset('task-state')).
+                    return element.addClass(element.dataset('step-state')).
                             append(
                             $("<td class='content'></td>").
-                                    append($("<span class='desc'></span>").text(element.dataset('task-desc'))).
-                                    append($("<input type='text'/>").val(element.dataset('task-desc')))
+                                    append($("<span class='desc'></span>").text(element.dataset('step-desc'))).
+                                    append($("<input type='text'/>").val(element.dataset('step-desc')))
                             ).
                             append($("<td class='showLocality'><span>@</span></td>")).
                             append(locality()).
@@ -90,26 +90,26 @@ var Application = function() {
                             );
                 }
 
-                function _list(taskEles, target) {
-                    $.each(taskEles, function() {
+                function _list(stepEles, target) {
+                    $.each(stepEles, function() {
                         _render(this).appendTo($(target));
                     });
                 }
 
-                function _refresh(taskEles) {
-                    $(taskTB).html("");
-                    _list(taskEles, taskTB);
+                function _refresh(stepEles) {
+                    $(stepTB).html("");
+                    _list(stepEles, stepTB);
                 }
 
-                TasksController.index("<tr></tr>", function(taskEles) {
-                    _refresh(taskEles);
-                    Geo.update(hlNearbyTasks);
+                StepsController.index("<tr></tr>", function(stepEles) {
+                    _refresh(stepEles);
+                    Geo.update(hlNearbySteps);
                     Geo.currentAddress(renderDirections);
                 });
             }
 
             function reorder() {
-                TasksController.updateOrder($(taskTRs));
+                StepsController.updateOrder($(stepTRs));
             }
 
             (function initCRUD() {
@@ -117,24 +117,24 @@ var Application = function() {
                 (function initCreate() {
                     (function initNew() {
                         function postNew() {
-                            if (isBlank($(newTaskDesc).val())) {
-                                $(newTaskDesc).val($(newTaskDesc).attr('placeholder'));
-                                $(newTaskDesc).select();
+                            if (isBlank($(newStepDesc).val())) {
+                                $(newStepDesc).val($(newStepDesc).attr('placeholder'));
+                                $(newStepDesc).select();
                                 return;
                             }
                             function params() {
-                                var paramValues = {desc: $(newTaskDesc).val()};
-                                var hasAddress = !isBlank($(newTaskLocality).val()) && 'Submit' == $(newTaskLocalityFinder).val();
-                                paramValues.locality = hasAddress ? $(newTaskLocality).val() : '';
-                                paramValues.lat = hasAddress ? $(newTaskLocality).dataset('task-lat') : '';
-                                paramValues.lng = hasAddress ? $(newTaskLocality).dataset('task-lng') : '';
+                                var paramValues = {desc: $(newStepDesc).val()};
+                                var hasAddress = !isBlank($(newStepLocality).val()) && 'Submit' == $(newStepLocalityFinder).val();
+                                paramValues.locality = hasAddress ? $(newStepLocality).val() : '';
+                                paramValues.lat = hasAddress ? $(newStepLocality).dataset('step-lat') : '';
+                                paramValues.lng = hasAddress ? $(newStepLocality).dataset('step-lng') : '';
                                 return paramValues;
                             }
 
-                            TasksController.create(params(), refresh, displayWarning);
+                            StepsController.create(params(), refresh, displayWarning);
                         }
 
-                        $(newTaskDesc).bind('click keydown', function(evt) {
+                        $(newStepDesc).bind('click keydown', function(evt) {
                             if (evt.type == 'click') {
                                 $(this).select();
                             } else if (13 == evt.keyCode) postNew();
@@ -144,14 +144,14 @@ var Application = function() {
                             $(mapCanvas).slideToggle();
                         });
 
-                        $(newTaskLocality).bind('click keydown', function(evt) {
+                        $(newStepLocality).bind('click keydown', function(evt) {
                             if (evt.type == 'click') {
                                 $(mapCanvas).slideDown();
                                 $(this).select();
                             } else {
                                 if (229 == evt.keyCode) return;
                                 if (13 != evt.keyCode) {
-                                    $(newTaskLocalityFinder).val('Find');
+                                    $(newStepLocalityFinder).val('Find');
                                 }
                                 else {
                                     codeAddress();
@@ -159,22 +159,22 @@ var Application = function() {
                             }
                         });
 
-                        $(newTaskLocalityFinder).bind('click', codeAddress);
+                        $(newStepLocalityFinder).bind('click', codeAddress);
 
                         function codeAddress() {
-                            if ('Find' == $(newTaskLocalityFinder).val()) {
+                            if ('Find' == $(newStepLocalityFinder).val()) {
                                 $(mapCanvas).slideDown();
-                                var locality = $(newTaskLocality).val();
+                                var locality = $(newStepLocality).val();
                                 if (isBlank(locality)) {
-                                    $(newTaskLocality).focus();
+                                    $(newStepLocality).focus();
                                 } else {
                                     Geo.locate({'address': locality}, function(location) {
-                                        $(newTaskLocality).dataset('task-lat', location.lat());
-                                        $(newTaskLocality).dataset('task-lng', location.lng());
-                                        $(newTaskLocalityFinder).val('Submit');
+                                        $(newStepLocality).dataset('step-lat', location.lat());
+                                        $(newStepLocality).dataset('step-lng', location.lng());
+                                        $(newStepLocalityFinder).val('Submit');
                                     }, function(msg) {
-                                        $(newTaskLocality).val(msg);
-                                        $(newTaskLocality).select();
+                                        $(newStepLocality).val(msg);
+                                        $(newStepLocality).select();
                                     });
                                 }
                             } else postNew();
@@ -196,11 +196,11 @@ var Application = function() {
                             var file = evt.dataTransfer.files[0],
                                     reader = new FileReader();
                             reader.onload = function (event) {
-                                var tasksParams = new Array();
+                                var stepsParams = new Array();
                                 $.each(event.target.result.split("\n"), function() {
-                                    if (!isBlank(this.toString())) tasksParams.push({desc: this, locality: '', lat: '', lng: ''});
+                                    if (!isBlank(this.toString())) stepsParams.push({desc: this, locality: '', lat: '', lng: ''});
                                 });
-                                TasksController.create(tasksParams, refresh, displayWarning);
+                                StepsController.create(stepsParams, refresh, displayWarning);
                             };
                             reader.readAsBinaryString(file);
                             return false;
@@ -209,25 +209,25 @@ var Application = function() {
                 })();
 
                 (function initDestroy() {
-                    $(taskRmBts).live('click', function(evt) {
+                    $(stepRmBts).live('click', function(evt) {
                         var self = this;
-                        var taskEle = $(self).parents('tr');
+                        var stepEle = $(self).parents('tr');
 
-                        TasksController.destroy(taskEle, function() {
-                            taskEle.remove();
+                        StepsController.destroy(stepEle, function() {
+                            stepEle.remove();
                             reorder();
                         }, displayWarning)
                     });
                 })();
 
                 (function initUpdate() {
-                    $(taskTDContents).live('click dblclick', function(evt) {
+                    $(stepTDContents).live('click dblclick', function(evt) {
                         var self = this;
-                        var taskEle = $(self).parents('tr');
+                        var stepEle = $(self).parents('tr');
                         if (evt.type == 'click') {
-                            TasksController.update(taskEle, {'task-state': $(taskEle).hasClass('done') ? "new" : "done"},
+                            StepsController.update(stepEle, {'step-state': $(stepEle).hasClass('done') ? "new" : "done"},
                                     function() {
-                                        $(taskEle).toggleClass('new done');
+                                        $(stepEle).toggleClass('new done');
                                     }, displayWarning);
                         }
                         else {
@@ -236,25 +236,25 @@ var Application = function() {
                         }
                     });
 
-                    $(taskEdis).live('click keydown focusout', function(evt) {
+                    $(stepEdis).live('click keydown focusout', function(evt) {
                         if (evt.type == 'click') {
                             return false;
                         } else {
                             if (evt.type == 'keydown' && 13 != evt.keyCode) return;
 
                             var self = this;
-                            var taskEle = $(self).parents('tr');
+                            var stepEle = $(self).parents('tr');
 
-                            TasksController.update(taskEle, {'task-desc': $(self).val()}, function() {
-                                var taskDesc = taskEle.find('.desc');
-                                taskDesc.text($(self).val());
-                                taskDesc.show();
+                            StepsController.update(stepEle, {'step-desc': $(self).val()}, function() {
+                                var stepDesc = stepEle.find('.desc');
+                                stepDesc.text($(self).val());
+                                stepDesc.show();
                                 $(self).hide();
                             }, displayWarning);
                         }
                     });
 
-                    $(taskTB).sortable({
+                    $(stepTB).sortable({
                         items: 'tr',
                         update : function() {
                             reorder();
@@ -263,9 +263,9 @@ var Application = function() {
                 })();
 
                 (function initShow() {
-                    $(taskTDShowLocality).live('click', function(evt) {
-                        var taskEle = $(this).parents('tr');
-                        var locality = taskEle.dataset('task-locality');
+                    $(stepTDShowLocality).live('click', function(evt) {
+                        var stepEle = $(this).parents('tr');
+                        var locality = stepEle.dataset('step-locality');
                         if (!isBlank(locality)) Geo.locate({'address': locality}, function() {
                         }, displayWarning);
                     });
@@ -277,7 +277,7 @@ var Application = function() {
 
             (function initMap() {
                 Geo.init(document.querySelector(mapCanvas), new google.maps.LatLng(39.9042140, 116.4074130), displayWarning);
-                Geo.startWatch(hlNearbyTasks, displayWarning);
+                Geo.startWatch(hlNearbySteps, displayWarning);
             })();
         })();
     }

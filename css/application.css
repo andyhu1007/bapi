@@ -33,7 +33,7 @@ article#main #footprints header {
     text-shadow: black 1px 1px 0px;
 }
 
-/* new task*/
+/* new step*/
 
 #new {
     margin-top: 10px;
@@ -95,7 +95,7 @@ article#main #footprints header {
     margin: 40px 0 0 50px;
 }
 
-/* Tasks */
+/* Steps */
 
 #main tr {
     background: rgba(74, 30, 70, 0.0898438);

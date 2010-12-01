@@ -1,5 +1,5 @@
-Task.tableName = "tasks";
-Task.columns = {
+Step.tableName = "steps";
+Step.columns = {
     id: "INTEGER NOT NULL PRIMARY KEY",
     desc: "TEXT NOT NULL",
     state: "TEXT DEFAULT 'new'",
@@ -10,7 +10,7 @@ Task.columns = {
     seq: "INTEGER"
 };
 
-function Task(params) {
+function Step(params) {
     this.superclass(this);
 
     if (!isBlank(params)) {
@@ -20,6 +20,6 @@ function Task(params) {
     }
 }
 
-ActiveRecord.asSuperOf(Task);
+ActiveRecord.asSuperOf(Step);
 
-Task.dataAttrPre = "task";
+Step.dataAttrPre = "step";
