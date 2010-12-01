@@ -1,8 +1,8 @@
 var Database = {
     config : {
-        name: "bapi",
+        name: "footprint",
         version: "",
-        desc: "Bapi Todo List",
+        desc: "Footprints",
         size: 2 * 1024 * 1024
     },
 
