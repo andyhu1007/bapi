@@ -25,6 +25,9 @@ var Application = function() {
         this.stepTDLocalityAddr = this.stepTDLocality + " address";
         this.stepEdis = this.stepTB + " input";
         this.stepRmBts = this.stepsSection + " .remove";
+
+        this.radiusLinks = this.stepsSection + " header h4 a";
+        this.selectedRadiusLink = this.stepsSection + " header h4 a.selected";
     }
 
     Selector.apply(this);
@@ -46,11 +49,18 @@ var Application = function() {
             function hlNearbySteps(currentLatlng) {
                 $(undoneTRs).each(function() {
                     if (!isBlank($(this).dataset('step-locality'))) {
-                        if (Geo.distance(currentLatlng, toLatlng(this)) < 10) {
+                        console.log(Geo.distance(currentLatlng, toLatlng(this)));
+                        if (Geo.distance(currentLatlng, toLatlng(this)) < $(selectedRadiusLink).text()) {
                             $(this).find('address').addClass('hl')
+                        } else {
+                            unHighlight(this);
                         }
                     } else {
-                        $(this).find('address').removeClass('hl');
+                        unHighlight(this);
+                    }
+
+                    function unHighlight(target) {
+                        $(target).find('address').removeClass('hl');
                     }
                 });
 
@@ -60,7 +70,7 @@ var Application = function() {
             }
 
             function renderDirections(currentAddress) {
-                $(stepTDLocality).each(function(){
+                $(stepTDLocality).each(function() {
                     var target = $(this).parents('tr').dataset('step-locality');
                     $(this).find('a').attr('href', 'http://maps.google.com/maps?q=from:' + currentAddress.long + '+to:' + target);
                 });
@@ -260,6 +270,15 @@ var Application = function() {
                         var locality = stepEle.dataset('step-locality');
                         if (!isBlank(locality)) Geo.locate({'address': locality}, function() {
                         }, displayWarning);
+                    });
+
+                    $(radiusLinks).bind('click', function(evt) {
+                        var selected = 'selected';
+                        if (!$(this).hasClass(selected)) {
+                            $(this).addClass(selected);
+                            $(this).siblings().removeClass(selected);
+                            Geo.update(hlNearbySteps);
+                        }
                     });
 
                 })();

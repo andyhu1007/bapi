@@ -105,7 +105,7 @@ var Geo = {
     startWatch : function(callback, errCallback) {
         var self = Geo;
         var watchId = navigator.geolocation.watchPosition(function(position) {
-            self._mark(self.toGoogleLatlng(position));
+            self._mark(self.toGoogleLatlng(position), 'You are here!');
             callback({lat: position.coords.latitude, lng: position.coords.longitude});
         }, function(err) {
             errCallback("Can not track your position: " + err.message);

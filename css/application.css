@@ -29,10 +29,6 @@ article#main {
     margin: 0 30px;
 }
 
-article#main #footprints header {
-    text-shadow: black 1px 1px 0px;
-}
-
 /* new step*/
 
 #new {
@@ -96,6 +92,30 @@ article#main #footprints header {
 }
 
 /* Steps */
+
+#footprints header > * {
+    float: left;
+}
+
+#footprints header h3 {
+    margin-right: 284px;
+    text-shadow: black 1px 1px 0px;
+}
+
+#footprints header h4 a {
+    -webkit-transition: color 0.2s linear;
+    color: black;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+#footprints header h4 a:hover, #footprints header h4 a.selected {
+    color: #FBE762;   
+}
+
+#footprints table {
+    clear: both;    
+}
 
 #footprints tr {
     background: rgba(74, 30, 70, 0.0898438);
