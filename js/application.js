@@ -42,6 +42,7 @@ var Application = function() {
                 Step.createTable();
             } else {
                 displayWarning('Web Databases not supported');
+                return;
             }
         })();
 
@@ -49,7 +50,6 @@ var Application = function() {
             function hlNearbySteps(currentLatlng) {
                 $(undoneTRs).each(function() {
                     if (!isBlank($(this).dataset('step-locality'))) {
-                        console.log(Geo.distance(currentLatlng, toLatlng(this)));
                         if (Geo.distance(currentLatlng, toLatlng(this)) < $(selectedRadiusLink).text()) {
                             $(this).find('address').addClass('hl')
                         } else {
@@ -69,52 +69,50 @@ var Application = function() {
                 }
             }
 
-            function renderDirections(currentAddress) {
-                $(stepTDLocality).each(function() {
-                    var target = $(this).parents('tr').dataset('step-locality');
-                    $(this).find('a').attr('href', 'http://maps.google.com/maps?q=from:' + currentAddress.long + '+to:' + target);
-                });
-            }
-
-            function refresh() {
-                function _render(element) {
-                    function locality() {
-                        var address = element.dataset('step-locality');
-                        address = isBlank(address) ? '' : address;
-                        return $("<td class='locality'></td>").
-                                append($("<address></address>").append($("<a target='_blank'></a>").text(address)));
-
-                    }
-
-                    return element.addClass(element.dataset('step-state')).
-                            append(
-                            $("<td class='content'></td>").
-                                    append($("<span class='desc'></span>").text(element.dataset('step-desc'))).
-                                    append($("<input type='text'/>").val(element.dataset('step-desc')))
-                            ).
-                            append($("<td class='showLocality'><span>@</span></td>")).
-                            append(locality()).
-                            append(
-                            $("<td class='buttons'></td>").
-                                    append("<span class='button remove'>X</span>")
-                            );
+            (function initCRUD() {
+                function reorder() {
+                    StepsController.updateOrder($(stepTRs));
                 }
 
-                StepsController.index("<tr></tr>", function(stepEles) {
-                    $(stepTB).html("");
-                    $.each(stepEles, function() {
-                        _render(this).appendTo($(stepTB));
+                function refresh() {
+                    function _render(element) {
+                        function locality() {
+                            var address = element.dataset('step-locality');
+                            address = isBlank(address) ? '' : address;
+                            return $("<td class='locality'></td>").
+                                    append($("<address></address>").append($("<a target='_blank'></a>").text(address)));
+
+                        }
+
+                        return element.addClass(element.dataset('step-state')).
+                                append(
+                                $("<td class='content'></td>").
+                                        append($("<span class='desc'></span>").text(element.dataset('step-desc'))).
+                                        append($("<input type='text'/>").val(element.dataset('step-desc')))
+                                ).
+                                append($("<td class='showLocality'><span>@</span></td>")).
+                                append(locality()).
+                                append(
+                                $("<td class='buttons'></td>").
+                                        append("<span class='button remove'>X</span>")
+                                );
+                    }
+
+                    StepsController.index("<tr></tr>", function(stepEles) {
+                        $(stepTB).html("");
+                        $.each(stepEles, function() {
+                            _render(this).appendTo($(stepTB));
+                        });
+                        Geo.update(hlNearbySteps);
+
+                        Geo.currentAddress(function renderDirections(currentAddress) {
+                            $(stepTDLocality).each(function() {
+                                var target = $(this).parents('tr').dataset('step-locality');
+                                $(this).find('a').attr('href', 'http://maps.google.com/maps?q=from:' + currentAddress.long + '+to:' + target);
+                            });
+                        });
                     });
-                    Geo.update(hlNearbySteps);
-                    Geo.currentAddress(renderDirections);
-                });
-            }
-
-            function reorder() {
-                StepsController.updateOrder($(stepTRs));
-            }
-
-            (function initCRUD() {
+                }
 
                 (function initCreate() {
                     (function initNew() {
@@ -146,24 +144,13 @@ var Application = function() {
                             $(mapCanvas).slideToggle();
                         });
 
-                        $(newStepLocality).bind('click keydown', function(evt) {
-                            if (evt.type == 'click') {
-                                $(mapCanvas).slideDown();
-                                $(this).select();
-                            } else {
-                                if (229 == evt.keyCode) return;
-                                if (13 != evt.keyCode) {
-                                    $(newStepLocalityFinder).val('Go');
-                                }
-                                else {
-                                    codeAddress();
-                                }
-                            }
+                        $(newStepLocality).bind('click', function(evt) {
+                            $(mapCanvas).slideDown();
+                            $(this).select();
+                            $(newStepLocalityFinder).val('Go');
                         });
 
-                        $(newStepLocalityFinder).bind('click', codeAddress);
-
-                        function codeAddress() {
+                        $(newStepLocalityFinder).bind('click', function codeAddress() {
                             if ('Go' == $(newStepLocalityFinder).val()) {
                                 $(mapCanvas).slideDown();
                                 var locality = $(newStepLocality).val();
@@ -180,7 +167,7 @@ var Application = function() {
                                     });
                                 }
                             } else postNew();
-                        }
+                        });
                     })();
 
                     (function initImporter() {
@@ -279,12 +266,13 @@ var Application = function() {
                             $(this).siblings().removeClass(selected);
                             Geo.update(hlNearbySteps);
                         }
+                        return false;
                     });
 
                 })();
-            })();
 
-            refresh();
+                refresh();
+            })();
 
             (function initMap() {
                 Geo.init(document.querySelector(mapCanvas), new google.maps.LatLng(39.9042140, 116.4074130), displayWarning);
