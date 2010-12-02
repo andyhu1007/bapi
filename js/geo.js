@@ -72,11 +72,25 @@ var Geo = {
     _mark : function(latlng, title) {
         var self = Geo;
         self.map.setCenter(latlng);
-        new google.maps.Marker({
-            map: self.map,
-            position: latlng,
-            title: title
-        });
+        if (noDuplicateMarker(self, latlng, title)) {
+            self._markers.push(new google.maps.Marker({
+                map: self.map,
+                position: latlng,
+                title: title
+            }))
+        }
+
+        function noDuplicateMarker(geo, latlng, title) {
+            if (isBlank(geo._markers))
+                geo._markers = new Array();
+
+            for (var i = 0; i < geo._markers.length; i++) {
+                var marker = geo._markers[i];
+                if (marker.getTitle() == title && marker.getPosition().lat() == latlng.lat() && marker.getPosition().lng() == latlng.lng())
+                    return false;
+            }
+            return true;
+        }
     },
 
     distance: function(latlng1, latlng2) {
@@ -105,21 +119,11 @@ var Geo = {
     startWatch : function(callback, errCallback) {
         var self = Geo;
         var watchId = navigator.geolocation.watchPosition(function(position) {
-            if (locationChanged(self, position))
-                self._mark(self.toGoogleLatlng(position), 'You are here!');
+            self._mark(self.toGoogleLatlng(position), 'You are here!');
             callback({lat: position.coords.latitude, lng: position.coords.longitude});
         }, function(err) {
             errCallback("Can not track your position: " + err.message);
         });
-
-        var locationChanged = function (self, position) {
-            if (isBlank(self._previousPosition)) {
-                self._previousPosition = position;
-                return true;
-            } else {
-                return !(position.coords.latitude == self._previousPosition.coords.latitude && position.coords.longitude == self._previousPosition.coords.longitude);
-            }
-        }
     },
 
     update : function(callback) {
