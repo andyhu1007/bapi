@@ -48,7 +48,7 @@ var Application = function() {
 
         (function initUI() {
             function hlNearbySteps(currentLatlng) {
-                $(undoneTRs).each(function() {
+                $(stepTRs).each(function() {
                     if (!isBlank($(this).dataset('step-locality'))) {
                         if (Geo.distance(currentLatlng, toLatlng(this)) < $(selectedRadiusLink).text()) {
                             $(this).find('address').addClass('hl')
@@ -103,7 +103,7 @@ var Application = function() {
                         $.each(stepEles, function() {
                             _render(this).appendTo($(stepTB));
                         });
-                        Geo.update(hlNearbySteps);
+                        Geo.update();
 
                         Geo.currentAddress(function renderDirections(currentAddress) {
                             $(stepTDLocality).each(function() {
@@ -266,7 +266,7 @@ var Application = function() {
                         if (!$(this).hasClass(selected)) {
                             $(this).addClass(selected);
                             $(this).siblings().removeClass(selected);
-                            Geo.update(hlNearbySteps);
+                            Geo.update();
                         }
                         return false;
                     });

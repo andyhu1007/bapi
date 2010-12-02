@@ -6,7 +6,7 @@ var Geo = {
         self.geocoder = new google.maps.Geocoder();
 
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
+            self.update(function(position) {
                 self._init(self.toGoogleLatlng(position));
             });
         } else {
@@ -105,23 +105,32 @@ var Geo = {
     startWatch : function(callback, errCallback) {
         var self = Geo;
         var watchId = navigator.geolocation.watchPosition(function(position) {
-            self._mark(self.toGoogleLatlng(position), 'You are here!');
+            if (locationChanged(self, position))
+                self._mark(self.toGoogleLatlng(position), 'You are here!');
             callback({lat: position.coords.latitude, lng: position.coords.longitude});
         }, function(err) {
             errCallback("Can not track your position: " + err.message);
         });
 
+        var locationChanged = function (self, position) {
+            if (isBlank(self._previousPosition)) {
+                self._previousPosition = position;
+                return true;
+            } else {
+                return !(position.coords.latitude == self._previousPosition.coords.latitude && position.coords.longitude == self._previousPosition.coords.longitude);
+            }
+        }
     },
 
     update : function(callback) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            callback({lat: position.coords.latitude, lng: position.coords.longitude})
-        });
+        var hook = isBlank(callback) ? (function() {
+        }) : callback;
+        navigator.geolocation.getCurrentPosition(hook);
     },
 
     currentAddress : function(callback) {
         var self = Geo;
-        navigator.geolocation.getCurrentPosition(function(position) {
+        self.update(function(position) {
             self.address(position, callback);
         });
     },
