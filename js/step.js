@@ -10,6 +10,8 @@ Step.columns = {
     seq: "INTEGER"
 };
 
+ActiveRecord.asSuperOf(Step);
+
 function Step(params) {
     this.superclass(this);
 
@@ -19,7 +21,5 @@ function Step(params) {
         }
     }
 }
-
-ActiveRecord.asSuperOf(Step);
 
 Step.dataAttrPre = "step";
