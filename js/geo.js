@@ -93,34 +93,46 @@ var Geo = {
         }
     },
 
-    distance: function(latlng1, latlng2) {
-        function toRad(deg) {
-            return deg * Math.PI / 180;
-        }
-
-        var R = 6371; // Radius of the earth in km
-        var dLat = toRad(latlng2.lat - latlng1.lat);
-        var dLon = toRad(latlng2.lng - latlng1.lng);
-        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(toRad(latlng1.lat)) * Math.cos(toRad(latlng2.lat)) *
-                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
+    direction : function(directionsRequest, directionPanel) {
+        var self = Geo;
+        self.routeService(directionsRequest, function(directionsResult) {
+            new google.maps.DirectionsRenderer({map: self.map, panel: directionPanel, directions: directionsResult});
+        });
     },
 
-    direction : function(directionRequest, directionPanel) {
+    distance : function(directionsRequest, callback, errCallback) {
         var self = Geo;
-        var service = new google.maps.DirectionsService();
-        service.route({origin: directionRequest.origin, destination: directionRequest.destination, travelMode: directionRequest.travelMode}, function(directionsResult, directionsStatus) {
-            new google.maps.DirectionsRenderer({map: self.map, panel: directionPanel, directions: directionsResult});
+        self.routeService(directionsRequest, function(directionsResult) {
+            if(directionsResult.routes.length == 0) return;
+            var legs = directionsResult.routes[0].legs;
+            var result = {km: 0, km: 0};
+            $.each(legs, function() {
+                result.km += this.distance.value / 1000;
+                result.minutes += this.duration.value / 60;
+            });
+            callback(result);
+        }, errCallback);
+    },
+
+    routeService : function(directionsRequest, callback, errCallback) {
+        var self = Geo;
+        if(isBlank(self._routeService))
+            self._routeService = new google.maps.DirectionsService();   
+        self._routeService.route(directionsRequest, function(directionsResult, directionsStatus) {
+            if (google.maps.DirectionsStatus.OK == directionsStatus) {
+                if (!isBlank(callback)) callback(directionsResult);
+            } else {
+                if (!isBlank(errCallback)) errCallback("Could not found the direction: " + directionsStatus);
+            }
         });
     },
 
     startWatch : function(callback, errCallback) {
         var self = Geo;
         var watchId = navigator.geolocation.watchPosition(function(position) {
-            self._mark(self.toGoogleLatlng(position), 'You are here!');
-            callback({lat: position.coords.latitude, lng: position.coords.longitude});
+            var latlng = self.toGoogleLatlng(position);
+            self._mark(latlng, 'You are here!');
+            callback(latlng);
         }, function(err) {
             errCallback("Can not track your position: " + err.message);
         });

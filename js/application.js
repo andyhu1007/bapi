@@ -49,23 +49,26 @@ var Application = function() {
         (function initUI() {
             function hlNearbySteps(currentLatlng) {
                 $(stepTRs).each(function() {
-                    if (!isBlank($(this).dataset('step-locality'))) {
-                        if (Geo.distance(currentLatlng, toLatlng(this)) < $(selectedRadiusLink).text()) {
-                            $(this).find('address').addClass('hl')
-                        } else {
-                            unHighlight(this);
-                        }
+                    var self = this;
+                    if (!isBlank($(self).dataset('step-locality'))) {
+                        Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
+                            if (result.km < $(selectedRadiusLink).text()) {
+                                $(self).find('address').addClass('hl')
+                            } else {
+                                unHighlight(self);
+                            }
+                        });
                     } else {
-                        unHighlight(this);
-                    }
-
-                    function unHighlight(target) {
-                        $(target).find('address').removeClass('hl');
+                        unHighlight(self);
                     }
                 });
 
-                function toLatlng(stepEle) {
-                    return {lat: $(stepEle).dataset('step-lat'), lng: $(stepEle).dataset('step-lng')}
+                function unHighlight(target) {
+                    $(target).find('address').removeClass('hl');
+                }
+
+                function toGoogleLatlng(stepEle) {
+                    return new google.maps.LatLng($(stepEle).dataset('step-lat'), $(stepEle).dataset('step-lng'));
                 }
             }
 
