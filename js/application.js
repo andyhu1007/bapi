@@ -289,43 +289,38 @@ var Application = function() {
                     function _reorder() {
                         var currentSortOption = $(selectedSortOption).text();
                         if ('Priority' == currentSortOption) {
-                            var stepLength = $(stepTRs).length;
-                            for (var i = 0; i < stepLength; i++) {
-                                for (var j = 0; j < stepLength - i - 1; j++) {
-                                    var currentStepTR = $(stepTRs)[j];
-                                    var nextStepTR = $(stepTRs)[j + 1];
-                                    if (parseInt($(currentStepTR).dataset('step-seq')) > parseInt($(nextStepTR).dataset('step-seq'))) {
-                                        $(nextStepTR).insertBefore($(currentStepTR));
-                                    }
-                                }
-                            }
+                            sortBy('step-seq');
                         } else if ('Distance' == currentSortOption) {
-                            var stepLength = $(stepTRs).length;
-                            for (var i = 0; i < stepLength; i++) {
-                                for (var j = 0; j < stepLength - i - 1; j++) {
-                                    var currentStepTR = $(stepTRs)[j];
-                                    var nextStepTR = $(stepTRs)[j + 1];
-                                    if (parseInt($(currentStepTR).dataset('distance')) > parseInt($(nextStepTR).dataset('distance'))) {
-                                        $(nextStepTR).insertBefore($(currentStepTR));
-                                    }
-                                }
-                            }
+                            sortBy('distance');
                         } else {
 
                         }
 
-                        hl();
+                        highlight(5);
 
-                        function hl() {
+                        function highlight(distance) {
                             $(stepTRs).each(function() {
                                 var self = this;
                                 var distanceInKm = $(self).dataset('distance');
-                                if (!isBlank(distanceInKm) && distanceInKm < 5) {
+                                if (!isBlank(distanceInKm) && distanceInKm < distance) {
                                     $(self).find('address').addClass('hl');
                                 } else {
                                     $(self).find('address').removeClass('hl');
                                 }
                             });
+                        }
+
+                        function sortBy(dataAttribute) {
+                            var stepLength = $(stepTRs).length;
+                            for (var i = 0; i < stepLength; i++) {
+                                for (var j = 0; j < stepLength - i - 1; j++) {
+                                    var currentStepTR = $(stepTRs)[j];
+                                    var nextStepTR = $(stepTRs)[j + 1];
+                                    if (parseInt($(currentStepTR).dataset(dataAttribute)) > parseInt($(nextStepTR).dataset(dataAttribute))) {
+                                        $(nextStepTR).insertBefore($(currentStepTR));
+                                    }
+                                }
+                            }
                         }
                     }
                 }
