@@ -18,6 +18,7 @@ var Application = function() {
         this.stepsSection = "article#main #footprints";
         this.stepTB = this.stepsSection + " table";
         this.stepTRs = this.stepTB + " tr";
+        this.withLocalityStepTRs = this.stepTB + " tr[data-step-locality!='']";
         this.undoneTRs = this.stepTB + " tr.new";
         this.stepTDContents = this.stepTRs + " td.content";
         this.stepTDShowLocality = this.stepTRs + " td.showLocality";
@@ -261,20 +262,16 @@ var Application = function() {
                 Geo.startWatch(reorderSteps, displayWarning);
 
                 function reorderSteps(currentLatlng) {
-                    $(stepTRs).each(function(index) {
+                    $(withLocalityStepTRs).each(function(index) {
                         var self = this;
-                        if (isBlank($(self).dataset('step-locality'))) {
-                            $(self).dataset('distance', '10000');
-                        } else {
-                            Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
-                                $(self).dataset('distance', result.km);
-                                if (allGetDistance()) _reorder();
-                            });
-                        }
+                        Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
+                            $(self).dataset('distance', result.km);
+                            if (allGetDistance()) _reorder();
+                        });
 
                         function allGetDistance() {
-                            for (var i = 0; i < $(stepTRs).length; i++) {
-                                if (isBlank($($(stepTRs)[i]).dataset('distance'))) return false;
+                            for (var i = 0; i < $(withLocalityStepTRs).length; i++) {
+                                if (isBlank($($(withLocalityStepTRs)[i]).dataset('distance'))) return false;
                             }
                             return true;
                         }
@@ -314,7 +311,10 @@ var Application = function() {
                                 for (var j = 0; j < stepLength - i - 1; j++) {
                                     var currentStepTR = $(stepTRs)[j];
                                     var nextStepTR = $(stepTRs)[j + 1];
-                                    if (parseInt($(currentStepTR).dataset(dataAttribute)) > parseInt($(nextStepTR).dataset(dataAttribute))) {
+                                    var currentStepVal = $(currentStepTR).dataset(dataAttribute);
+                                    var nextStepVal = $(nextStepTR).dataset(dataAttribute);
+                                    if (isBlank(nextStepVal)) continue;
+                                    if (isBlank(currentStepVal) || parseInt(currentStepVal) > parseInt(nextStepVal)) {
                                         $(nextStepTR).insertBefore($(currentStepTR));
                                     }
                                 }
