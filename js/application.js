@@ -265,11 +265,9 @@ var Application = function() {
                         var self = this;
                         if (isBlank($(self).dataset('step-locality'))) {
                             $(self).dataset('distance', '10000');
-                            $(self).dataset('duration', '100000000');
                         } else {
                             Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
                                 $(self).dataset('distance', result.km);
-                                $(self).dataset('duration', result.minutes);
                                 if (allGetDistance()) _reorder();
                             });
                         }
