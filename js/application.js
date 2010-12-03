@@ -26,8 +26,8 @@ var Application = function() {
         this.stepEdis = this.stepTB + " input";
         this.stepRmBts = this.stepsSection + " .remove";
 
-        this.radiusLinks = this.stepsSection + " header h4 a";
-        this.selectedRadiusLink = this.stepsSection + " header h4 a.selected";
+        this.sortOptions = "#sortOptions";
+        this.selectedSortOption = this.sortOptions + " a.selected";
     }
 
     Selector.apply(this);
@@ -47,30 +47,6 @@ var Application = function() {
         })();
 
         (function initUI() {
-            function hlNearbySteps(currentLatlng) {
-                $(stepTRs).each(function() {
-                    var self = this;
-                    if (!isBlank($(self).dataset('step-locality'))) {
-                        Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
-                            if (result.km < $(selectedRadiusLink).text()) {
-                                $(self).find('address').addClass('hl')
-                            } else {
-                                unHighlight(self);
-                            }
-                        });
-                    } else {
-                        unHighlight(self);
-                    }
-                });
-
-                function unHighlight(target) {
-                    $(target).find('address').removeClass('hl');
-                }
-
-                function toGoogleLatlng(stepEle) {
-                    return new google.maps.LatLng($(stepEle).dataset('step-lat'), $(stepEle).dataset('step-lng'));
-                }
-            }
 
             (function initCRUD() {
                 function reorder() {
@@ -264,7 +240,7 @@ var Application = function() {
                         }, displayWarning);
                     });
 
-                    $(radiusLinks).bind('click', function(evt) {
+                    $(sortOptions).bind('click', function(evt) {
                         var selected = 'selected';
                         if (!$(this).hasClass(selected)) {
                             $(this).addClass(selected);
@@ -281,7 +257,50 @@ var Application = function() {
 
             (function initMap() {
                 Geo.init(document.querySelector(mapCanvas), new google.maps.LatLng(39.9042140, 116.4074130), displayWarning);
-                Geo.startWatch(hlNearbySteps, displayWarning);
+                Geo.startWatch(reorderSteps, displayWarning);
+
+                function reorderSteps(currentLatlng) {
+                    var stepCount = $(stepTRs).length;
+                    $(stepTRs).each(function(index) {
+                        var self = this;
+                        if (isBlank($(self).dataset('step-locality'))) return;
+                        Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
+                            $(self).dataset('distance', result.km);
+                            $(self).dataset('duration', result.minutes);
+                            if (index == stepCount - 1) {
+                                _reorder();
+                            }
+                        });
+
+                        function toGoogleLatlng(stepEle) {
+                            return new google.maps.LatLng($(stepEle).dataset('step-lat'), $(stepEle).dataset('step-lng'));
+                        }
+                    });
+
+                    function _reorder() {
+                        var currentSortOption = $(selectedSortOption).text();
+                        if ('Priority' == currentSortOption) {
+                            $(stepTRs).each(function() {
+                                var self = this;
+                                var distanceInKm = $(self).dataset('distance');
+                                if (!isBlank(distanceInKm) && distanceInKm < 5) {
+                                    $(self).find('address').addClass('hl');
+                                } else {
+                                    $(self).find('address').removeClass('hl');
+                                }
+                            });
+
+                        } else if ('Distance' == currentSortOption) {
+                            var steps = new Array();
+                            $(stepTRs).each(function() {
+                                var self = this;
+
+                            });
+                        } else {
+
+                        }
+                    }
+                }
             })();
         })();
     }

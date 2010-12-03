@@ -14,7 +14,9 @@ var DataAttrMapper = {
         var record = new constructor();
         var dataset = $(element).dataset();
         for (var key in dataset) {
-            record[pattern.exec(key)[1]] = dataset[key];
+            var matched = pattern.exec(key);
+            if (!isBlank(matched))
+                record[matched[1]] = dataset[key];
         }
         return record;
     }
