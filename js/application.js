@@ -26,8 +26,9 @@ var Application = function() {
         this.stepEdis = this.stepTB + " input";
         this.stepRmBts = this.stepsSection + " .remove";
 
-        this.sortOptions = "#sortOptions";
-        this.selectedSortOption = this.sortOptions + " a.selected";
+        this.sort = "#sortOptions";
+        this.sortOptions = this.sort + " a";
+        this.selectedSortOption = this.sort + " a.selected";
     }
 
     Selector.apply(this);
@@ -260,17 +261,25 @@ var Application = function() {
                 Geo.startWatch(reorderSteps, displayWarning);
 
                 function reorderSteps(currentLatlng) {
-                    var stepCount = $(stepTRs).length;
                     $(stepTRs).each(function(index) {
                         var self = this;
-                        if (isBlank($(self).dataset('step-locality'))) return;
-                        Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
-                            $(self).dataset('distance', result.km);
-                            $(self).dataset('duration', result.minutes);
-                            if (index == stepCount - 1) {
-                                _reorder();
+                        if (isBlank($(self).dataset('step-locality'))) {
+                            $(self).dataset('distance', '10000');
+                            $(self).dataset('duration', '100000000');
+                        } else {
+                            Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
+                                $(self).dataset('distance', result.km);
+                                $(self).dataset('duration', result.minutes);
+                                if (allGetDistance()) _reorder();
+                            });
+                        }
+
+                        function allGetDistance() {
+                            for (var i = 0; i < $(stepTRs).length; i++) {
+                                if (isBlank($($(stepTRs)[i]).dataset('distance'))) return false;
                             }
-                        });
+                            return true;
+                        }
 
                         function toGoogleLatlng(stepEle) {
                             return new google.maps.LatLng($(stepEle).dataset('step-lat'), $(stepEle).dataset('step-lng'));
@@ -280,6 +289,34 @@ var Application = function() {
                     function _reorder() {
                         var currentSortOption = $(selectedSortOption).text();
                         if ('Priority' == currentSortOption) {
+                            var stepLength = $(stepTRs).length;
+                            for (var i = 0; i < stepLength; i++) {
+                                for (var j = 0; j < stepLength - i - 1; j++) {
+                                    var currentStepTR = $(stepTRs)[j];
+                                    var nextStepTR = $(stepTRs)[j + 1];
+                                    if (parseInt($(currentStepTR).dataset('step-seq')) > parseInt($(nextStepTR).dataset('step-seq'))) {
+                                        $(nextStepTR).insertBefore($(currentStepTR));
+                                    }
+                                }
+                            }
+                        } else if ('Distance' == currentSortOption) {
+                            var stepLength = $(stepTRs).length;
+                            for (var i = 0; i < stepLength; i++) {
+                                for (var j = 0; j < stepLength - i - 1; j++) {
+                                    var currentStepTR = $(stepTRs)[j];
+                                    var nextStepTR = $(stepTRs)[j + 1];
+                                    if (parseInt($(currentStepTR).dataset('distance')) > parseInt($(nextStepTR).dataset('distance'))) {
+                                        $(nextStepTR).insertBefore($(currentStepTR));
+                                    }
+                                }
+                            }
+                        } else {
+
+                        }
+
+                        hl();
+
+                        function hl() {
                             $(stepTRs).each(function() {
                                 var self = this;
                                 var distanceInKm = $(self).dataset('distance');
@@ -289,15 +326,6 @@ var Application = function() {
                                     $(self).find('address').removeClass('hl');
                                 }
                             });
-
-                        } else if ('Distance' == currentSortOption) {
-                            var steps = new Array();
-                            $(stepTRs).each(function() {
-                                var self = this;
-
-                            });
-                        } else {
-
                         }
                     }
                 }

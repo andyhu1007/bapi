@@ -10,7 +10,7 @@ var StepsController = {
     },
 
     create: function(params, callback, errCallback) {
-        Step.where("WHERE created_date = (date('now', 'localtime'))", function(steps) {
+        Step.where({}, function(steps) {
             function createInstance(params, index) {
                 params.seq = index;
                 Step.create(params, callback, errCallback);
