@@ -262,11 +262,13 @@ var Application = function() {
                 Geo.startWatch(reorderSteps, displayWarning);
 
                 function reorderSteps(currentLatlng) {
+
+                    var count = 0;
                     $(withLocalityStepTRs).each(function(index) {
                         var self = this;
                         Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
                             $(self).dataset('distance', result.km);
-                            if (allGetDistance()) _reorder();
+                            if (++count == $(withLocalityStepTRs).length) _reorder();
                         });
 
                         function allGetDistance() {
@@ -275,11 +277,11 @@ var Application = function() {
                             }
                             return true;
                         }
-
-                        function toGoogleLatlng(stepEle) {
-                            return new google.maps.LatLng($(stepEle).dataset('step-lat'), $(stepEle).dataset('step-lng'));
-                        }
                     });
+
+                    function toGoogleLatlng(stepEle) {
+                        return new google.maps.LatLng($(stepEle).dataset('step-lat'), $(stepEle).dataset('step-lng'));
+                    }
 
                     function _reorder() {
                         var currentSortOption = $(selectedSortOption).text();
@@ -288,7 +290,25 @@ var Application = function() {
                         } else if ('Distance' == currentSortOption) {
                             sortBy('distance');
                         } else {
+                            var vertexes = new Array();
+                            vertexes.push(currentLatlng);
+                            $(withLocalityStepTRs).each(function() {
+                                vertexes.push(toGoogleLatlng(this));
+                            });
+                            var graph = new Graph(vertexes.length);
 
+                            var setDistance = function(graph, vertexes, i, j) {
+                                Geo.distance({origin: vertexes[i], destination: vertexes[j], travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
+                                    graph.val(i, j, result.km);
+                                });
+                            }
+
+                            for (var i = 0; i < vertexes.length; i++) {
+                                for (var j = i; j < vertexes.length; j++) {
+                                    if (i == j) graph.val(i, j, 0);
+                                    else setDistance(graph, vertexes, i, j);
+                                }
+                            }
                         }
 
                         highlight(5);
