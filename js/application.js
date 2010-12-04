@@ -293,17 +293,11 @@ var Application = function() {
                             var count = 0;
                             var maxVertexNum = (vertexes.length * (vertexes.length - 1)) / 2;
 
-                            var visitSequence = null;
-                            var setDistance = function(graph, vertexes, i, j) {
+                            var setDistance = function(graph, vertexes, i, j, callback) {
                                 Geo.distance({origin: vertexes[i].latlng, destination: vertexes[j].latlng, travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
                                     graph.val(i, j, result.km);
                                     if (++count == maxVertexNum) {
-                                        visitSequence = tsp(graph, vertexes);
-                                        if (!isBlank(visitSequence)) {
-                                            for(var k = visitSequence.length - 1; k >= 0; k--) {
-                                                $(visitSequence[k]).prependTo($(stepTB));
-                                            }
-                                        }
+                                        callback(graph, vertexes);
                                     }
                                 });
                             }
@@ -311,35 +305,42 @@ var Application = function() {
                             for (var i = 0; i < vertexes.length; i++) {
                                 for (var j = i; j < vertexes.length; j++) {
                                     if (i == j) graph.val(i, j, 0);
-                                    else setDistance(graph, vertexes, i, j);
+                                    else setDistance(graph, vertexes, i, j, sortByRoute);
                                 }
                             }
 
-                            function tsp(graph, vertexes) {
-                                var start = 0;
-                                var result = new Array();
-                                while (true) {
-                                    var min = 10000;
-                                    vertexes[start].visited = 1;
-                                    var nextStep = start;
-                                    for (var i = 0; i < vertexes.length; i++) {
-                                        if (isBlank(vertexes[i].visited)) {
-                                            if (start > i && min > graph.val(i, start)) {
-                                                nextStep = i;
-                                                min = graph.val(i, start);
-                                            } else if (start < i && min > graph.val(start, i)) {
-                                                nextStep = i;
-                                                min = graph.val(start, i);
+                            function sortByRoute(graph, vertexes) {
+                                var sortByNearestNeighbour = function(graph, vertexes) {
+                                    var start = 0;
+                                    var result = new Array();
+                                    while (true) {
+                                        var min = 10000;
+                                        vertexes[start].visited = 1;
+                                        var nextStep = start;
+                                        for (var i = 0; i < vertexes.length; i++) {
+                                            if (isBlank(vertexes[i].visited)) {
+                                                if (start > i && min > graph.val(i, start)) {
+                                                    nextStep = i;
+                                                    min = graph.val(i, start);
+                                                } else if (start < i && min > graph.val(start, i)) {
+                                                    nextStep = i;
+                                                    min = graph.val(start, i);
+                                                }
                                             }
                                         }
+                                        if (nextStep == start) break;
+                                        result.push(vertexes[nextStep].stepEle);
+                                        start = nextStep;
                                     }
-                                    if (nextStep == start) break;
-                                    result.push(vertexes[nextStep].stepEle);
-                                    start = nextStep;
+                                    return result;
                                 }
-                                return result;
-                            }
 
+                                var visitSequence = sortByNearestNeighbour(graph, vertexes);
+                                for (var k = visitSequence.length - 1; k >= 0; k--) {
+                                    $(visitSequence[k]).prependTo($(stepTB));
+                                }
+
+                            }
                         }
 
                         highlight(5);
