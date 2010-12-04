@@ -215,12 +215,16 @@ var Application = function() {
                     reorderSteps(toGoogleLatlng(currentAddressBox));
                 } else {
                     Geo.update(function(position, currentAddress) {
-                        $(currentAddressBox).text(currentAddress.short);
-                        $(currentAddressBox).dataset('step-lat', position.coords.latitude);
-                        $(currentAddressBox).dataset('step-lng', position.coords.longitude);
+                        updateCurrentAddressBox(currentAddress.short, {lat: position.coords.latitude, lng: position.coords.longitude});
                         if (!isBlank(callback)) callback(currentAddress);
                     });
                 }
+            }
+
+            function updateCurrentAddressBox(address, latlng) {
+                $(currentAddressBox).text(address);
+                $(currentAddressBox).dataset('step-lat', latlng.lat);
+                $(currentAddressBox).dataset('step-lng', latlng.lng);
             }
 
             (function initCRUD() {
@@ -430,7 +434,6 @@ var Application = function() {
                 Geo.init(document.querySelector(mapCanvas), new google.maps.LatLng(39.9042140, 116.4074130), displayWarning);
                 Geo.startWatch(reorderSteps, displayWarning);
 
-
                 (function initShow() {
                     $(currentAddressBox).click(function() {
                         if (!isBlank($(this).text())) Geo.locate({'location': toGoogleLatlng(this), 'address': $(this).text()}, function() {
@@ -452,16 +455,13 @@ var Application = function() {
                                 $(changeCurrentAddressBox).focus();
                             } else {
                                 Geo.locate({'address': $(changeCurrentAddressBox).val()}, function(location) {
-                                    $(currentAddressBox).dataset('step-lat', location.lat());
-                                    $(currentAddressBox).dataset('step-lng', location.lng());
-                                    $(currentAddressBox).text($(changeCurrentAddressBox).val());
+                                    updateCurrentAddressBox($(changeCurrentAddressBox).val(), {lat: location.lat(), lng: location.lng()});
                                     $(currentAddressBox).show();
                                     $(changeCurrentAddressBox).val('');
                                     $(changeCurrentAddressBox).hide();
                                     $(currentAddressBox).dataset('state', 'fixed')
                                     $(self).text("(Watch address)");
                                     reorderSteps(toGoogleLatlng(currentAddressBox));
-                                    console.log($(currentAddressBox).text());
                                     renderDirections({short: $(currentAddressBox).text()});
                                 }, function(msg) {
                                     $(changeCurrentAddressBox).val(msg);
