@@ -6,7 +6,7 @@ var Geo = {
         self.geocoder = new google.maps.Geocoder();
 
         if (navigator.geolocation) {
-            self.update(function(position) {
+            self._update(function(position) {
                 self._init(self.toGoogleLatlng(position));
             });
         } else {
@@ -30,41 +30,16 @@ var Geo = {
         self.geocoder.geocode(request, function(results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
                 var result = results[0];
-                if (!isBlank(request['address'])) {
+                if (!isBlank(request['location'])) {
+                    self._mark(request.location, request.address);
+                    callback(result.address_components);
+                } else if (!isBlank(request['address'])) {
                     var loc = result.geometry.location;
                     self._mark(loc, request['address']);
                     callback(loc);
-                } else if (!isBlank(request['location'])) {
-                    callback(result.address_components);
                 }
             } else {
                 errCallback("Nothing Found: " + status);
-            }
-        });
-    },
-
-    address : function(position, callback) {
-        var self = Geo;
-        self.locate({'location' : self.toGoogleLatlng(position)}, function(addressComponents) {
-            var accepts = ['street_number', 'route', 'sublocality', 'locality', 'country'];
-            var addressNames = {long: "", short: ""};
-            $.each(addressComponents, function() {
-                var self = this;
-                isIntersect(accepts, self.types, function() {
-                    addressNames.long += " " + self.long_name;
-                    addressNames.short += " " + self.short_name;
-                });
-            });
-
-            callback(addressNames);
-
-            function isIntersect(arrayA, arrayB, callback) {
-                $.each(arrayA, function() {
-                    var a = this;
-                    $.each(arrayB, function() {
-                        if (a.toString() == this.toString()) callback();
-                    });
-                });
             }
         });
     },
@@ -103,7 +78,7 @@ var Geo = {
     distance : function(directionsRequest, callback, errCallback) {
         var self = Geo;
         self.routeService(directionsRequest, function(directionsResult) {
-            if(directionsResult.routes.length == 0) return;
+            if (directionsResult.routes.length == 0) return;
             var legs = directionsResult.routes[0].legs;
             var result = {km: 0, hr: 0};
             $.each(legs, function() {
@@ -116,8 +91,8 @@ var Geo = {
 
     routeService : function(directionsRequest, callback, errCallback) {
         var self = Geo;
-        if(isBlank(self._routeService))
-            self._routeService = new google.maps.DirectionsService();   
+        if (isBlank(self._routeService))
+            self._routeService = new google.maps.DirectionsService();
         self._routeService.route(directionsRequest, function(directionsResult, directionsStatus) {
             if (google.maps.DirectionsStatus.OK == directionsStatus) {
                 if (!isBlank(callback)) callback(directionsResult);
@@ -138,16 +113,37 @@ var Geo = {
         });
     },
 
-    update : function(callback) {
+    _update : function(callback) {
         var hook = isBlank(callback) ? (function() {
         }) : callback;
         navigator.geolocation.getCurrentPosition(hook);
     },
 
-    currentAddress : function(callback) {
+    update : function(callback) {
         var self = Geo;
-        self.update(function(position) {
-            self.address(position, callback);
+        self._update(function(position) {
+            self.locate({'location' : self.toGoogleLatlng(position)}, function(addressComponents) {
+                var accepts = ['street_number', 'route', 'sublocality', 'locality', 'country'];
+                var addressNames = {long: "", short: ""};
+                $.each(addressComponents, function() {
+                    var self = this;
+                    isIntersect(accepts, self.types, function() {
+                        addressNames.long += " " + self.long_name;
+                        addressNames.short += " " + self.short_name;
+                    });
+                });
+
+                callback(position, addressNames);
+
+                function isIntersect(arrayA, arrayB, callback) {
+                    $.each(arrayA, function() {
+                        var a = this;
+                        $.each(arrayB, function() {
+                            if (a.toString() == this.toString()) callback();
+                        });
+                    });
+                }
+            });
         });
     },
 

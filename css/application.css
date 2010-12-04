@@ -43,6 +43,15 @@ article#main {
     width: 253px;
 }
 
+#currentPosition {
+    float: right;
+}
+
+#currentPosition address {
+    display: inline;
+    color: #FBE762;
+}
+
 #map #map_canvas {
     position: relative;
     left: 9px;

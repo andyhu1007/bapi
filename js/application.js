@@ -15,6 +15,8 @@ var Application = function() {
         this.importerHeader = this.importer + " header";
         this.importerBox = this.importer + " #import";
 
+        this.currentAddressBox = "#currentPosition address";
+
         this.stepsSection = "article#main #footprints";
         this.totalDesc = this.stepsSection + " #totalDesc"
         this.stepTB = this.stepsSection + " table";
@@ -40,6 +42,10 @@ var Application = function() {
             $(warning).html(message);
         }
 
+        function toGoogleLatlng(stepEle) {
+            return new google.maps.LatLng($(stepEle).dataset('step-lat'), $(stepEle).dataset('step-lng'));
+        }
+
         (function initDB() {
             if (window.openDatabase) {
                 Step.createTable();
@@ -54,6 +60,16 @@ var Application = function() {
             (function initCRUD() {
                 function reorder() {
                     StepsController.updateOrder($(stepTRs));
+                }
+
+                function updateCurrentAddress(callback) {
+                    Geo.update(function(position, currentAddress) {
+                        $(currentAddressBox).text(currentAddress.short);
+                        $(currentAddressBox).dataset('step-lat', position.coords.latitude);
+                        $(currentAddressBox).dataset('step-lng', position.coords.longitude);
+                        if (!isBlank(callback)) callback(position, currentAddress);
+                    });
+
                 }
 
                 function refresh() {
@@ -86,9 +102,7 @@ var Application = function() {
                         $.each(stepEles, function() {
                             _render(this).appendTo($(stepTB));
                         });
-                        Geo.update();
-
-                        Geo.currentAddress(function renderDirections(currentAddress) {
+                        updateCurrentAddress(function renderDirections(position, currentAddress) {
                             $(stepTDLocality).each(function() {
                                 var target = $(this).parents('tr').dataset('step-locality');
                                 $(this).find('a').attr('href', 'http://maps.google.com/maps?q=from:' + currentAddress.long + '+to:' + target);
@@ -190,7 +204,7 @@ var Application = function() {
                         StepsController.destroy(stepEle, function() {
                             stepEle.remove();
                             reorder();
-                            if('Route' == $(selectedSortOption).text() && !isBlank($(stepEle).dataset('step-locality'))) Geo.update();
+                            if ('Route' == $(selectedSortOption).text() && !isBlank($(stepEle).dataset('step-locality'))) updateCurrentAddress();
                         }, displayWarning)
                     });
                 })();
@@ -245,12 +259,17 @@ var Application = function() {
                         }, displayWarning);
                     });
 
+                    $(currentAddressBox).click(function() {
+                        if (!isBlank($(this).text())) Geo.locate({'location': toGoogleLatlng(this), 'address': $(this).text()}, function() {
+                        }, displayWarning);
+                    });
+
                     $(sortOptions).bind('click', function(evt) {
                         var selected = 'selected';
                         if (!$(this).hasClass(selected)) {
                             $(this).addClass(selected);
                             $(this).siblings().removeClass(selected);
-                            Geo.update();
+                            updateCurrentAddress();
                         }
                         return false;
                     });
@@ -383,13 +402,10 @@ var Application = function() {
                     }
 
 
-                    function toGoogleLatlng(stepEle) {
-                        return new google.maps.LatLng($(stepEle).dataset('step-lat'), $(stepEle).dataset('step-lng'));
-                    }
-
                     function setTotalDesc(desc) {
                         $(totalDesc).html(desc);
                     }
+
                     function highlight(distance) {
                         $(stepTRs).each(function() {
                             var self = this;
