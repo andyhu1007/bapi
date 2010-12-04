@@ -190,7 +190,7 @@ var Application = function() {
                         StepsController.destroy(stepEle, function() {
                             stepEle.remove();
                             reorder();
-                            Geo.update();
+                            if('Route' == $(selectedSortOption).text() && !isBlank($(stepEle).dataset('step-locality'))) Geo.update();
                         }, displayWarning)
                     });
                 })();
