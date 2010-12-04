@@ -45,10 +45,6 @@ var Application = function() {
             $(warning).html(message);
         }
 
-        function toGoogleLatlng(stepEle) {
-            return new google.maps.LatLng($(stepEle).dataset('step-lat'), $(stepEle).dataset('step-lng'));
-        }
-
         (function initDB() {
             if (window.openDatabase) {
                 Step.createTable();
@@ -59,14 +55,172 @@ var Application = function() {
         })();
 
         (function initUI() {
-            function updateCurrentAddress(callback) {
-                Geo.update(function(position, currentAddress) {
-                    $(currentAddressBox).text(currentAddress.short);
-                    $(currentAddressBox).dataset('step-lat', position.coords.latitude);
-                    $(currentAddressBox).dataset('step-lng', position.coords.longitude);
-                    if (!isBlank(callback)) callback(position, currentAddress);
-                });
+            function toGoogleLatlng(stepEle) {
+                return new google.maps.LatLng($(stepEle).dataset('step-lat'), $(stepEle).dataset('step-lng'));
+            }
 
+            function renderDirections(currentAddress) {
+                $(stepTDLocality).each(function() {
+                    var target = $(this).parents('tr').dataset('step-locality');
+                    $(this).find('a').attr('href', 'http://maps.google.com/maps?q=from:' + currentAddress.short + '+to:' + target);
+                });
+            }
+
+            function reorderSteps(currentLatlng) {
+                var currentSortOption = $(selectedSortOption).text();
+                if ('Route' == currentSortOption) {
+                    var generateGraphDistances = function(vertexes, callback) {
+                        var graph = new Graph(vertexes.length);
+
+                        if (vertexes.length == 1) {
+                            callback(graph, vertexes);
+                            return;
+                        }
+
+                        var count = 0;
+                        var getDistance = function(graph, vertexes, i, j, callback) {
+                            Geo.distance({origin: vertexes[i].latlng, destination: vertexes[j].latlng, travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
+                                graph.val(i, j, result);
+                                if (i == 0) $(vertexes[j].stepEle).dataset('distance', result.km);
+                                if (++count == graph.maxArcs()) callback(graph, vertexes);
+                            });
+                        }
+
+                        for (var i = 0; i < vertexes.length; i++) {
+                            for (var j = i; j < vertexes.length; j++) {
+                                if (i == j) graph.val(i, j, {km: 0, hr: 0});
+                                else getDistance(graph, vertexes, i, j, callback);
+                            }
+                        }
+                    }
+
+                    var localityVertexes = function() {
+                        var vertexes = new Array();
+                        vertexes.push({latlng: currentLatlng});
+                        $(undoneWithLocalityStepTRs).each(function() {
+                            vertexes.push({stepEle: this, latlng: toGoogleLatlng(this)});
+                        });
+                        return vertexes;
+                    }
+
+                    var sortByRoute = function(graph, vertexes) {
+                        var sortByNearestNeighbour = function(graph, vertexes) {
+                            var start = 0;
+                            var routes = new Array();
+                            var distance = 0;
+                            var time = 0;
+                            if (vertexes.length > 1)
+                                while (true) {
+                                    var min = {km: 99999, hr: 0};
+                                    vertexes[start].visited = 1;
+                                    var nextStep = start;
+                                    for (var i = 0; i < vertexes.length; i++) {
+                                        if (!isBlank(vertexes[i].visited)) continue;
+                                        if (min.km > graph.val(Math.min(start, i), Math.max(start, i)).km) {
+                                            nextStep = i;
+                                            min = graph.val(Math.min(start, i), Math.max(start, i));
+                                        }
+                                    }
+                                    if (nextStep == start) break;
+                                    distance += min.km;
+                                    time += min.hr;
+                                    routes.push(vertexes[nextStep].stepEle);
+                                    start = nextStep;
+                                }
+                            return {distance: distance, time: time, routes: routes};
+                        }
+
+                        var route = sortByNearestNeighbour(graph, vertexes);
+                        for (var k = route.routes.length - 1; k >= 0; k--) {
+                            $(route.routes[k]).prependTo($(stepTB));
+                        }
+
+                        $(stepTB).sortable({ disabled: true });
+                        setTotalDesc(("<span><strong>Distance:</strong>" + roundNumber(route.distance, 2) + "km" + "</span>") + " / " +
+                                ("<span><strong>Time:</strong>" + roundNumber(route.time, 2) + "hr" + "</span>"));
+                        highlight();
+                    }
+
+                    generateGraphDistances(localityVertexes(), sortByRoute);
+                } else {
+                    var generateDistances = function(callback) {
+                        var count = 0;
+                        var steps = $(withLocalityStepTRs).length;
+                        $(withLocalityStepTRs).each(function() {
+                            var self = this;
+                            Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
+                                $(self).dataset('distance', result.km);
+                                if (++count == steps) callback();
+                            });
+                        });
+                    }
+
+                    var sortByPriority = function() {
+                        $(stepTB).sortable({ disabled: false });
+                        sortBy('step-seq');
+                        setTotalDesc("");
+                        highlight();
+                    }
+                    var sortByDistance = function() {
+                        $(stepTB).sortable({ disabled: true });
+                        sortBy('distance');
+                        setTotalDesc("");
+                        highlight();
+                    }
+
+                    var sortBy = function(dataAttribute) {
+                        var stepLength = $(stepTRs).length;
+                        for (var i = 0; i < stepLength; i++) {
+                            for (var j = 0; j < stepLength - i - 1; j++) {
+                                var currentStepTR = $(stepTRs)[j];
+                                var nextStepTR = $(stepTRs)[j + 1];
+                                var currentStepVal = $(currentStepTR).dataset(dataAttribute);
+                                var nextStepVal = $(nextStepTR).dataset(dataAttribute);
+                                if (isBlank(nextStepVal)) continue;
+                                if (isBlank(currentStepVal) || parseFloat(currentStepVal) > parseFloat(nextStepVal)) {
+                                    $(nextStepTR).insertBefore($(currentStepTR));
+                                }
+                            }
+                        }
+                    }
+
+                    if ('Priority' == currentSortOption) {
+                        generateDistances(sortByPriority);
+                    } else if ('Distance' == currentSortOption) {
+                        generateDistances(sortByDistance);
+                    }
+                }
+
+
+                function setTotalDesc(desc) {
+                    $(totalDesc).html(desc);
+                }
+
+                function highlight(distance) {
+                    $(stepTRs).each(function() {
+                        var self = this;
+                        var distanceInKm = $(self).dataset('distance');
+                        if (!isBlank(distanceInKm) && distanceInKm < 5) {
+                            $(self).find('address').addClass('hl');
+                        } else {
+                            $(self).find('address').removeClass('hl');
+                        }
+                    });
+                }
+            }
+
+            function updateCurrentAddress(callback) {
+                if ($(currentAddressBox).dataset('state') == 'fixed') {
+                    if (!isBlank(callback)) callback({short: $(currentAddressBox).text()});
+                    reorderSteps(toGoogleLatlng(currentAddressBox));
+                } else {
+                    Geo.update(function(position, currentAddress) {
+                        $(currentAddressBox).text(currentAddress.short);
+                        $(currentAddressBox).dataset('step-lat', position.coords.latitude);
+                        $(currentAddressBox).dataset('step-lng', position.coords.longitude);
+                        if (!isBlank(callback)) callback(currentAddress);
+                    });
+                }
             }
 
             (function initCRUD() {
@@ -104,12 +258,7 @@ var Application = function() {
                         $.each(stepEles, function() {
                             _render(this).appendTo($(stepTB));
                         });
-                        updateCurrentAddress(function renderDirections(position, currentAddress) {
-                            $(stepTDLocality).each(function() {
-                                var target = $(this).parents('tr').dataset('step-locality');
-                                $(this).find('a').attr('href', 'http://maps.google.com/maps?q=from:' + currentAddress.long + '+to:' + target);
-                            });
-                        });
+                        updateCurrentAddress(renderDirections);
                     });
                 }
 
@@ -262,11 +411,6 @@ var Application = function() {
                         }, displayWarning);
                     });
 
-                    $(currentAddressBox).click(function() {
-                        if (!isBlank($(this).text())) Geo.locate({'location': toGoogleLatlng(this), 'address': $(this).text()}, function() {
-                        }, displayWarning);
-                    });
-
                     $(sortOptions).bind('click', function(evt) {
                         var selected = 'selected';
                         if (!$(this).hasClass(selected)) {
@@ -286,158 +430,24 @@ var Application = function() {
                 Geo.init(document.querySelector(mapCanvas), new google.maps.LatLng(39.9042140, 116.4074130), displayWarning);
                 Geo.startWatch(reorderSteps, displayWarning);
 
-                function reorderSteps(currentLatlng) {
-                    var currentSortOption = $(selectedSortOption).text();
-                    if ('Route' == currentSortOption) {
-                        var generateGraphDistances = function(vertexes, callback) {
-                            var graph = new Graph(vertexes.length);
 
-                            if (vertexes.length == 1) {
-                                callback(graph, vertexes);
-                                return;
-                            }
-
-                            var count = 0;
-                            var getDistance = function(graph, vertexes, i, j, callback) {
-                                Geo.distance({origin: vertexes[i].latlng, destination: vertexes[j].latlng, travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
-                                    graph.val(i, j, result);
-                                    if (i == 0) $(vertexes.stepEle).dataset('distance', result.km);
-                                    if (++count == graph.maxArcs()) callback(graph, vertexes);
-                                });
-                            }
-
-                            for (var i = 0; i < vertexes.length; i++) {
-                                for (var j = i; j < vertexes.length; j++) {
-                                    if (i == j) graph.val(i, j, {km: 0, hr: 0});
-                                    else getDistance(graph, vertexes, i, j, callback);
-                                }
-                            }
-                        }
-
-                        var localityVertexes = function() {
-                            var vertexes = new Array();
-                            vertexes.push({latlng: currentLatlng});
-                            $(undoneWithLocalityStepTRs).each(function() {
-                                vertexes.push({stepEle: this, latlng: toGoogleLatlng(this)});
-                            });
-                            return vertexes;
-                        }
-
-                        var sortByRoute = function(graph, vertexes) {
-                            var sortByNearestNeighbour = function(graph, vertexes) {
-                                var start = 0;
-                                var routes = new Array();
-                                var distance = 0;
-                                var time = 0;
-                                if (vertexes.length > 1)
-                                    while (true) {
-                                        var min = {km: 99999, hr: 0};
-                                        vertexes[start].visited = 1;
-                                        var nextStep = start;
-                                        for (var i = 0; i < vertexes.length; i++) {
-                                            if (!isBlank(vertexes[i].visited)) continue;
-                                            if (min.km > graph.val(Math.min(start, i), Math.max(start, i)).km) {
-                                                nextStep = i;
-                                                min = graph.val(Math.min(start, i), Math.max(start, i));
-                                            }
-                                        }
-                                        if (nextStep == start) break;
-                                        distance += min.km;
-                                        time += min.hr;
-                                        routes.push(vertexes[nextStep].stepEle);
-                                        start = nextStep;
-                                    }
-                                return {distance: distance, time: time, routes: routes};
-                            }
-
-                            var route = sortByNearestNeighbour(graph, vertexes);
-                            for (var k = route.routes.length - 1; k >= 0; k--) {
-                                $(route.routes[k]).prependTo($(stepTB));
-                            }
-
-                            $(stepTB).sortable({ disabled: true });
-                            setTotalDesc(("<span><strong>Distance:</strong>" + roundNumber(route.distance, 2) + "km" + "</span>") + " / " +
-                                    ("<span><strong>Time:</strong>" + roundNumber(route.time, 2) + "hr" + "</span>"));
-                            highlight();
-                        }
-
-                        generateGraphDistances(localityVertexes(), sortByRoute);
-                    } else {
-                        var generateDistances = function(callback) {
-                            var count = 0;
-                            var steps = $(withLocalityStepTRs).length;
-                            $(withLocalityStepTRs).each(function() {
-                                var self = this;
-                                Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
-                                    $(self).dataset('distance', result.km);
-                                    if (++count == steps) callback();
-                                });
-                            });
-                        }
-
-                        var sortByPriority = function() {
-                            $(stepTB).sortable({ disabled: false });
-                            sortBy('step-seq');
-                            setTotalDesc("");
-                            highlight();
-                        }
-                        var sortByDistance = function() {
-                            $(stepTB).sortable({ disabled: true });
-                            sortBy('distance');
-                            setTotalDesc("");
-                            highlight();
-                        }
-
-                        var sortBy = function(dataAttribute) {
-                            var stepLength = $(stepTRs).length;
-                            for (var i = 0; i < stepLength; i++) {
-                                for (var j = 0; j < stepLength - i - 1; j++) {
-                                    var currentStepTR = $(stepTRs)[j];
-                                    var nextStepTR = $(stepTRs)[j + 1];
-                                    var currentStepVal = $(currentStepTR).dataset(dataAttribute);
-                                    var nextStepVal = $(nextStepTR).dataset(dataAttribute);
-                                    if (isBlank(nextStepVal)) continue;
-                                    if (isBlank(currentStepVal) || parseFloat(currentStepVal) > parseFloat(nextStepVal)) {
-                                        $(nextStepTR).insertBefore($(currentStepTR));
-                                    }
-                                }
-                            }
-                        }
-
-                        if ('Priority' == currentSortOption) {
-                            generateDistances(sortByPriority);
-                        } else if ('Distance' == currentSortOption) {
-                            generateDistances(sortByDistance);
-                        }
-                    }
-
-
-                    function setTotalDesc(desc) {
-                        $(totalDesc).html(desc);
-                    }
-
-                    function highlight(distance) {
-                        $(stepTRs).each(function() {
-                            var self = this;
-                            var distanceInKm = $(self).dataset('distance');
-                            if (!isBlank(distanceInKm) && distanceInKm < 5) {
-                                $(self).find('address').addClass('hl');
-                            } else {
-                                $(self).find('address').removeClass('hl');
-                            }
-                        });
-                    }
-                }
+                (function initShow() {
+                    $(currentAddressBox).click(function() {
+                        if (!isBlank($(this).text())) Geo.locate({'location': toGoogleLatlng(this), 'address': $(this).text()}, function() {
+                        }, displayWarning);
+                    });
+                })();
 
                 (function initUpdate() {
+
                     $(changeCurrentAddress).click(function() {
                         var self = this;
-                        if ($(self).dataset('state') == 'auto') {
+                        if ($(currentAddressBox).dataset('state') == 'auto') {
                             $(currentAddressBox).hide();
                             $(changeCurrentAddressBox).show();
-                            $(self).dataset('state', 'go');
+                            $(currentAddressBox).dataset('state', 'go');
                             $(self).text('Find');
-                        } else if ($(self).dataset('state') == 'go') {
+                        } else if ($(currentAddressBox).dataset('state') == 'go') {
                             if (isBlank($(changeCurrentAddressBox).val())) {
                                 $(changeCurrentAddressBox).focus();
                             } else {
@@ -448,17 +458,23 @@ var Application = function() {
                                     $(currentAddressBox).show();
                                     $(changeCurrentAddressBox).val('');
                                     $(changeCurrentAddressBox).hide();
-                                    $(self).dataset('state', 'fixed')
-                                    $(self).text("Update address");
+                                    $(currentAddressBox).dataset('state', 'fixed')
+                                    $(self).text("(Watch address)");
+                                    reorderSteps(toGoogleLatlng(currentAddressBox));
+                                    console.log($(currentAddressBox).text());
+                                    renderDirections({short: $(currentAddressBox).text()});
                                 }, function(msg) {
                                     $(changeCurrentAddressBox).val(msg);
                                     $(changeCurrentAddressBox).select();
                                 });
                             }
-                        } else if ($(self).dataset('state') == 'fixed') {
-                            updateCurrentAddress();
-                            $(self).dataset('state', 'auto');
+                        } else if ($(currentAddressBox).dataset('state') == 'fixed') {
+                            $(currentAddressBox).dataset('state', 'auto');
                             $(self).text("(I'm not here)");
+                            updateCurrentAddress(function(currentAddress) {
+                                reorderSteps(toGoogleLatlng(currentAddressBox));
+                                renderDirections(currentAddress);
+                            });
                         }
                     });
                 })();
