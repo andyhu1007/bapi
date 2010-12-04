@@ -50,6 +50,27 @@ article#main {
 #currentPosition address {
     display: inline;
     color: #FBE762;
+    cursor: pointer;
+}
+
+#currentPosition address:hover {
+    text-decoration: underline;
+}
+
+#changeCurrentAddress {
+    margin-left: 10px;
+    color: #BED364;
+    cursor: pointer;
+}
+
+#changeCurrentAddress:hover {
+    color: #FBE762;
+    text-decoration: underline;
+}
+
+#changeCurrentAddressBox {
+    display: none;
+    width: 270px;
 }
 
 #map #map_canvas {

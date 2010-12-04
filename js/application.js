@@ -16,6 +16,8 @@ var Application = function() {
         this.importerBox = this.importer + " #import";
 
         this.currentAddressBox = "#currentPosition address";
+        this.changeCurrentAddress = "#changeCurrentAddress";
+        this.changeCurrentAddressBox = "#changeCurrentAddressBox";
 
         this.stepsSection = "article#main #footprints";
         this.totalDesc = this.stepsSection + " #totalDesc"
@@ -57,20 +59,19 @@ var Application = function() {
         })();
 
         (function initUI() {
+            function updateCurrentAddress(callback) {
+                Geo.update(function(position, currentAddress) {
+                    $(currentAddressBox).text(currentAddress.short);
+                    $(currentAddressBox).dataset('step-lat', position.coords.latitude);
+                    $(currentAddressBox).dataset('step-lng', position.coords.longitude);
+                    if (!isBlank(callback)) callback(position, currentAddress);
+                });
+
+            }
 
             (function initCRUD() {
                 function reorder() {
                     StepsController.updateOrder($(stepTRs));
-                }
-
-                function updateCurrentAddress(callback) {
-                    Geo.update(function(position, currentAddress) {
-                        $(currentAddressBox).text(currentAddress.short);
-                        $(currentAddressBox).dataset('step-lat', position.coords.latitude);
-                        $(currentAddressBox).dataset('step-lng', position.coords.longitude);
-                        if (!isBlank(callback)) callback(position, currentAddress);
-                    });
-
                 }
 
                 function refresh() {
@@ -427,6 +428,40 @@ var Application = function() {
                         });
                     }
                 }
+
+                (function initUpdate() {
+                    $(changeCurrentAddress).click(function() {
+                        var self = this;
+                        if ($(self).dataset('state') == 'auto') {
+                            $(currentAddressBox).hide();
+                            $(changeCurrentAddressBox).show();
+                            $(self).dataset('state', 'go');
+                            $(self).text('Find');
+                        } else if ($(self).dataset('state') == 'go') {
+                            if (isBlank($(changeCurrentAddressBox).val())) {
+                                $(changeCurrentAddressBox).focus();
+                            } else {
+                                Geo.locate({'address': $(changeCurrentAddressBox).val()}, function(location) {
+                                    $(currentAddressBox).dataset('step-lat', location.lat());
+                                    $(currentAddressBox).dataset('step-lng', location.lng());
+                                    $(currentAddressBox).text($(changeCurrentAddressBox).val());
+                                    $(currentAddressBox).show();
+                                    $(changeCurrentAddressBox).val('');
+                                    $(changeCurrentAddressBox).hide();
+                                    $(self).dataset('state', 'fixed')
+                                    $(self).text("Update address");
+                                }, function(msg) {
+                                    $(changeCurrentAddressBox).val(msg);
+                                    $(changeCurrentAddressBox).select();
+                                });
+                            }
+                        } else if ($(self).dataset('state') == 'fixed') {
+                            updateCurrentAddress();
+                            $(self).dataset('state', 'auto');
+                            $(self).text("(I'm not here)");
+                        }
+                    });
+                })();
             })();
         })();
     }
