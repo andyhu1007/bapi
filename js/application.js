@@ -460,7 +460,7 @@ var Application = function() {
                                     $(changeCurrentAddressBox).val('');
                                     $(changeCurrentAddressBox).hide();
                                     $(currentAddressBox).dataset('state', 'fixed')
-                                    $(self).text("(Watch address)");
+                                    $(self).text("(Update address)");
                                     reorderSteps(toGoogleLatlng(currentAddressBox));
                                     renderDirections({short: $(currentAddressBox).text()});
                                 }, function(msg) {
