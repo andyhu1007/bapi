@@ -190,6 +190,7 @@ var Application = function() {
                         StepsController.destroy(stepEle, function() {
                             stepEle.remove();
                             reorder();
+                            Geo.update();
                         }, displayWarning)
                     });
                 })();
@@ -325,6 +326,7 @@ var Application = function() {
                                 $(route.routes[k]).prependTo($(stepTB));
                             }
 
+                            $(stepTB).sortable({ disabled: true });
                             setTotalDesc(("<span><strong>Distance:</strong>" + roundNumber(route.distance, 2) + "km" + "</span>") + " / " +
                                     ("<span><strong>Time:</strong>" + roundNumber(route.time, 2) + "hr" + "</span>"));
                             highlight();
@@ -345,11 +347,13 @@ var Application = function() {
                         }
 
                         var sortByPriority = function() {
+                            $(stepTB).sortable({ disabled: false });
                             sortBy('step-seq');
                             setTotalDesc("");
                             highlight();
                         }
                         var sortByDistance = function() {
+                            $(stepTB).sortable({ disabled: true });
                             sortBy('distance');
                             setTotalDesc("");
                             highlight();
