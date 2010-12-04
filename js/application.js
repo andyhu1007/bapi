@@ -22,6 +22,7 @@ var Application = function() {
         this.stepTB = this.stepsSection + " table";
         this.stepTRs = this.stepTB + " tr";
         this.withLocalityStepTRs = this.stepTB + " tr[data-step-locality!='']";
+        this.undoneWithLocalityStepTRs = this.stepTB + " tr.new[data-step-locality!='']";
         this.undoneTRs = this.stepTB + " tr.new";
         this.stepTDTasks = this.stepTRs + " td.task";
         this.stepTDShowLocality = this.stepTRs + " td.showLocality";
@@ -204,7 +205,7 @@ var Application = function() {
                         StepsController.destroy(stepEle, function() {
                             stepEle.remove();
                             reorder();
-                            if ('Route' == $(selectedSortOption).text() && !isBlank($(stepEle).dataset('step-locality'))) updateCurrentAddress();
+                            if ('Route' == $(selectedSortOption).text() && $(stepEle).hasClass('new') && !isBlank($(stepEle).dataset('step-locality'))) updateCurrentAddress();
                         }, displayWarning)
                     });
                 })();
@@ -217,6 +218,7 @@ var Application = function() {
                             StepsController.update(stepEle, {'step-state': $(stepEle).hasClass('done') ? "new" : "done"},
                                     function() {
                                         $(stepEle).toggleClass('new done');
+                                        if ('Route' == $(selectedSortOption).text() && !isBlank($(stepEle).dataset('step-locality'))) updateCurrentAddress();
                                     }, displayWarning);
                         }
                         else {
@@ -288,6 +290,12 @@ var Application = function() {
                     if ('Route' == currentSortOption) {
                         var generateGraphDistances = function(vertexes, callback) {
                             var graph = new Graph(vertexes.length);
+
+                            if (vertexes.length == 1) {
+                                callback(graph, vertexes);
+                                return;
+                            }
+
                             var count = 0;
                             var getDistance = function(graph, vertexes, i, j, callback) {
                                 Geo.distance({origin: vertexes[i].latlng, destination: vertexes[j].latlng, travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
@@ -308,7 +316,7 @@ var Application = function() {
                         var localityVertexes = function() {
                             var vertexes = new Array();
                             vertexes.push({latlng: currentLatlng});
-                            $(withLocalityStepTRs).each(function() {
+                            $(undoneWithLocalityStepTRs).each(function() {
                                 vertexes.push({stepEle: this, latlng: toGoogleLatlng(this)});
                             });
                             return vertexes;
@@ -320,23 +328,24 @@ var Application = function() {
                                 var routes = new Array();
                                 var distance = 0;
                                 var time = 0;
-                                while (true) {
-                                    var min = {km: 99999, hr: 0};
-                                    vertexes[start].visited = 1;
-                                    var nextStep = start;
-                                    for (var i = 0; i < vertexes.length; i++) {
-                                        if (!isBlank(vertexes[i].visited)) continue;
-                                        if (min.km > graph.val(Math.min(start, i), Math.max(start, i)).km) {
-                                            nextStep = i;
-                                            min = graph.val(Math.min(start, i), Math.max(start, i));
+                                if (vertexes.length > 1)
+                                    while (true) {
+                                        var min = {km: 99999, hr: 0};
+                                        vertexes[start].visited = 1;
+                                        var nextStep = start;
+                                        for (var i = 0; i < vertexes.length; i++) {
+                                            if (!isBlank(vertexes[i].visited)) continue;
+                                            if (min.km > graph.val(Math.min(start, i), Math.max(start, i)).km) {
+                                                nextStep = i;
+                                                min = graph.val(Math.min(start, i), Math.max(start, i));
+                                            }
                                         }
+                                        if (nextStep == start) break;
+                                        distance += min.km;
+                                        time += min.hr;
+                                        routes.push(vertexes[nextStep].stepEle);
+                                        start = nextStep;
                                     }
-                                    if (nextStep == start) break;
-                                    distance += min.km;
-                                    time += min.hr;
-                                    routes.push(vertexes[nextStep].stepEle);
-                                    start = nextStep;
-                                }
                                 return {distance: distance, time: time, routes: routes};
                             }
 
