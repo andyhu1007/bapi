@@ -36,11 +36,11 @@ article#main {
 }
 
 #new #desc {
-    width: 295px;
+    width: 225px;
 }
 
 #new #locality {
-    width: 183px;
+    width: 253px;
 }
 
 #map #map_canvas {
@@ -98,19 +98,27 @@ article#main {
 }
 
 #footprints header h3 {
-    margin-right: 208px;
+    margin-right: 160px;
     text-shadow: black 1px 1px 0px;
 }
 
-#footprints header h4 a {
+#footprints header #sortOptionCaption {
+    margin-right: 10px;
+}
+
+#footprints header #sortOptions a {
     -webkit-transition: color 0.2s linear;
-    color: black;
+    color: darkGray;
     font-weight: bold;
     text-decoration: none;
 }
 
-#footprints header h4 a:hover, #footprints header h4 a.selected {
+#footprints header #sortOptions a:hover, #footprints header #sortOptions a.selected {
     color: #FBE762;   
+}
+
+#footprints #totalDesc {
+    float: right;
 }
 
 #footprints table {
@@ -128,25 +136,25 @@ article#main {
     background: rgba(190, 211, 100, 0.1);
 }
 
-#footprints td.content {
+#footprints td.task {
     cursor: pointer;
     color: #FBE762;
-    width: 300px;
+    width: 230px;
 }
 
-#footprints td.content:hover {
+#footprints td.task:hover {
     color: rgba(0, 0, 0, 0.296875);
     -webkit-transition: color 0.2s linear;
     text-decoration: line-through;
 }
 
-#footprints td.content input {
+#footprints td.task input {
     display: none;
-    width: 290px;
+    width: 220px;
 }
 
 #footprints td.locality {
-    width: 200px;
+    width: 270px;
 }
 
 #footprints td.locality address a, #footprints td.showLocality {
@@ -169,7 +177,7 @@ article#main {
     color: #FBE762;
 }
 
-#footprints tr.done td.content, #footprints tr.done td.showLocality, #footprints tr.done td.locality address a {
+#footprints tr.done td.task, #footprints tr.done td.showLocality, #footprints tr.done td.locality address a {
     color: rgba(0, 0, 0, 0.296875);
     text-decoration: line-through;
 }

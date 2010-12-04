@@ -21,7 +21,7 @@ var Application = function() {
         this.stepTRs = this.stepTB + " tr";
         this.withLocalityStepTRs = this.stepTB + " tr[data-step-locality!='']";
         this.undoneTRs = this.stepTB + " tr.new";
-        this.stepTDContents = this.stepTRs + " td.content";
+        this.stepTDTasks = this.stepTRs + " td.task";
         this.stepTDShowLocality = this.stepTRs + " td.showLocality";
         this.stepTDLocality = this.stepTRs + " td.locality";
         this.stepTDLocalityAddr = this.stepTDLocality + " address";
@@ -68,7 +68,7 @@ var Application = function() {
 
                         return element.addClass(element.dataset('step-state')).
                                 append(
-                                $("<td class='content'></td>").
+                                $("<td class='task'></td>").
                                         append($("<span class='desc'></span>").text(element.dataset('step-desc'))).
                                         append($("<input type='text'/>").val(element.dataset('step-desc')))
                                 ).
@@ -195,7 +195,7 @@ var Application = function() {
                 })();
 
                 (function initUpdate() {
-                    $(stepTDContents).live('click dblclick', function(evt) {
+                    $(stepTDTasks).live('click dblclick', function(evt) {
                         var self = this;
                         var stepEle = $(self).parents('tr');
                         if (evt.type == 'click') {
@@ -325,7 +325,8 @@ var Application = function() {
                                 $(route.routes[k]).prependTo($(stepTB));
                             }
 
-                            setTotalDesc("Distance:" + roundNumber(route.distance, 2) + "km Time: " + roundNumber(route.time, 2) + "hr");
+                            setTotalDesc(("<span><strong>Distance:</strong>" + roundNumber(route.distance, 2) + "km" + "</span>") + " / " +
+                                    ("<span><strong>Time:</strong>" + roundNumber(route.time, 2) + "hr" + "</span>"));
                             highlight();
                         }
 
@@ -383,7 +384,7 @@ var Application = function() {
                     }
 
                     function setTotalDesc(desc) {
-                        $(totalDesc).text(desc);
+                        $(totalDesc).html(desc);
                     }
                     function highlight(distance) {
                         $(stepTRs).each(function() {
