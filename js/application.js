@@ -262,116 +262,126 @@ var Application = function() {
                 Geo.startWatch(reorderSteps, displayWarning);
 
                 function reorderSteps(currentLatlng) {
-                    var foundDistance = 0;
-                    $(withLocalityStepTRs).each(function(index) {
-                        var self = this;
-                        Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
-                            $(self).dataset('distance', result.km);
-                            if (++foundDistance == $(withLocalityStepTRs).length) _reorder();
+                    var currentSortOption = $(selectedSortOption).text();
+                    if ('Priority' == currentSortOption) {
+                        var foundDistance = 0;
+                        $(withLocalityStepTRs).each(function() {
+                            var self = this;
+                            Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
+                                $(self).dataset('distance', result.km);
+                                if (++foundDistance == $(withLocalityStepTRs).length) {
+                                    sortBy('step-seq');
+                                    highlight(5);
+                                }
+                            });
                         });
-                    });
+                    } else if ('Distance' == currentSortOption) {
+                        var foundDistance = 0;
+                        $(withLocalityStepTRs).each(function() {
+                            var self = this;
+                            Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
+                                $(self).dataset('distance', result.km);
+                                if (++foundDistance == $(withLocalityStepTRs).length) {
+                                    sortBy('distance');
+                                    highlight(5);
+                                }
+                            });
+                        });
+                    } else {
+
+                        var localityVertexes = function() {
+                            var vertexes = new Array();
+                            vertexes.push({latlng: currentLatlng});
+                            $(withLocalityStepTRs).each(function() {
+                                vertexes.push({stepEle: this, latlng: toGoogleLatlng(this)});
+                            });
+                            return vertexes;
+                        }
+
+                        var vertexes = localityVertexes();
+
+                        var graph = new Graph(vertexes.length);
+
+                        var foundArc = 0;
+                        var setDistance = function(graph, vertexes, i, j, callback) {
+                            Geo.distance({origin: vertexes[i].latlng, destination: vertexes[j].latlng, travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
+                                graph.val(i, j, result.km);
+                                if (++foundArc == graph.maxArcs()) {
+                                    callback(graph, vertexes);
+                                    highlight(5);
+                                }
+                            });
+                        }
+
+                        for (var i = 0; i < vertexes.length; i++) {
+                            for (var j = i; j < vertexes.length; j++) {
+                                if (i == j) graph.val(i, j, 0);
+                                else setDistance(graph, vertexes, i, j, sortByRoute);
+                            }
+                        }
+
+                        function sortByRoute(graph, vertexes) {
+                            var sortByNearestNeighbour = function(graph, vertexes) {
+                                var start = 0;
+                                var result = new Array();
+                                while (true) {
+                                    var min = 10000;
+                                    vertexes[start].visited = 1;
+                                    var nextStep = start;
+                                    for (var i = 0; i < vertexes.length; i++) {
+                                        if (isBlank(vertexes[i].visited)) {
+                                            if (start > i && min > graph.val(i, start)) {
+                                                nextStep = i;
+                                                min = graph.val(i, start);
+                                            } else if (start < i && min > graph.val(start, i)) {
+                                                nextStep = i;
+                                                min = graph.val(start, i);
+                                            }
+                                        }
+                                    }
+                                    if (nextStep == start) break;
+                                    result.push(vertexes[nextStep].stepEle);
+                                    start = nextStep;
+                                }
+                                return result;
+                            }
+
+                            var visitSequence = sortByNearestNeighbour(graph, vertexes);
+                            for (var k = visitSequence.length - 1; k >= 0; k--) {
+                                $(visitSequence[k]).prependTo($(stepTB));
+                            }
+
+                        }
+                    }
+
 
                     function toGoogleLatlng(stepEle) {
                         return new google.maps.LatLng($(stepEle).dataset('step-lat'), $(stepEle).dataset('step-lng'));
                     }
 
-                    function _reorder() {
-                        var currentSortOption = $(selectedSortOption).text();
-                        if ('Priority' == currentSortOption) {
-                            sortBy('step-seq');
-                        } else if ('Distance' == currentSortOption) {
-                            sortBy('distance');
-                        } else {
-                            var localityVertexes = function() {
-                                var vertexes = new Array();
-                                vertexes.push({latlng: currentLatlng});
-                                $(withLocalityStepTRs).each(function() {
-                                    vertexes.push({stepEle: this, latlng: toGoogleLatlng(this)});
-                                });
-                                return vertexes;
+                    function highlight(distance) {
+                        $(stepTRs).each(function() {
+                            var self = this;
+                            var distanceInKm = $(self).dataset('distance');
+                            if (!isBlank(distanceInKm) && distanceInKm < distance) {
+                                $(self).find('address').addClass('hl');
+                            } else {
+                                $(self).find('address').removeClass('hl');
                             }
+                        });
+                    }
 
-                            var vertexes = localityVertexes();
-
-                            var graph = new Graph(vertexes.length);
-
-                            var foundArc = 0;
-                            var setDistance = function(graph, vertexes, i, j, callback) {
-                                Geo.distance({origin: vertexes[i].latlng, destination: vertexes[j].latlng, travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
-                                    graph.val(i, j, result.km);
-                                    if (++foundArc == graph.maxArcs()) {
-                                        callback(graph, vertexes);
-                                    }
-                                });
-                            }
-
-                            for (var i = 0; i < vertexes.length; i++) {
-                                for (var j = i; j < vertexes.length; j++) {
-                                    if (i == j) graph.val(i, j, 0);
-                                    else setDistance(graph, vertexes, i, j, sortByRoute);
-                                }
-                            }
-
-                            function sortByRoute(graph, vertexes) {
-                                var sortByNearestNeighbour = function(graph, vertexes) {
-                                    var start = 0;
-                                    var result = new Array();
-                                    while (true) {
-                                        var min = 10000;
-                                        vertexes[start].visited = 1;
-                                        var nextStep = start;
-                                        for (var i = 0; i < vertexes.length; i++) {
-                                            if (isBlank(vertexes[i].visited)) {
-                                                if (start > i && min > graph.val(i, start)) {
-                                                    nextStep = i;
-                                                    min = graph.val(i, start);
-                                                } else if (start < i && min > graph.val(start, i)) {
-                                                    nextStep = i;
-                                                    min = graph.val(start, i);
-                                                }
-                                            }
-                                        }
-                                        if (nextStep == start) break;
-                                        result.push(vertexes[nextStep].stepEle);
-                                        start = nextStep;
-                                    }
-                                    return result;
-                                }
-
-                                var visitSequence = sortByNearestNeighbour(graph, vertexes);
-                                for (var k = visitSequence.length - 1; k >= 0; k--) {
-                                    $(visitSequence[k]).prependTo($(stepTB));
-                                }
-
-                            }
-                        }
-
-                        highlight(5);
-
-                        function highlight(distance) {
-                            $(stepTRs).each(function() {
-                                var self = this;
-                                var distanceInKm = $(self).dataset('distance');
-                                if (!isBlank(distanceInKm) && distanceInKm < distance) {
-                                    $(self).find('address').addClass('hl');
-                                } else {
-                                    $(self).find('address').removeClass('hl');
-                                }
-                            });
-                        }
-
-                        function sortBy(dataAttribute) {
-                            var stepLength = $(stepTRs).length;
-                            for (var i = 0; i < stepLength; i++) {
-                                for (var j = 0; j < stepLength - i - 1; j++) {
-                                    var currentStepTR = $(stepTRs)[j];
-                                    var nextStepTR = $(stepTRs)[j + 1];
-                                    var currentStepVal = $(currentStepTR).dataset(dataAttribute);
-                                    var nextStepVal = $(nextStepTR).dataset(dataAttribute);
-                                    if (isBlank(nextStepVal)) continue;
-                                    if (isBlank(currentStepVal) || parseFloat(currentStepVal) > parseFloat(nextStepVal)) {
-                                        $(nextStepTR).insertBefore($(currentStepTR));
-                                    }
+                    function sortBy(dataAttribute) {
+                        var stepLength = $(stepTRs).length;
+                        for (var i = 0; i < stepLength; i++) {
+                            for (var j = 0; j < stepLength - i - 1; j++) {
+                                var currentStepTR = $(stepTRs)[j];
+                                var nextStepTR = $(stepTRs)[j + 1];
+                                var currentStepVal = $(currentStepTR).dataset(dataAttribute);
+                                var nextStepVal = $(nextStepTR).dataset(dataAttribute);
+                                if (isBlank(nextStepVal)) continue;
+                                if (isBlank(currentStepVal) || parseFloat(currentStepVal) > parseFloat(nextStepVal)) {
+                                    $(nextStepTR).insertBefore($(currentStepTR));
                                 }
                             }
                         }
