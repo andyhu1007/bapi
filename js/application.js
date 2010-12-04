@@ -262,14 +262,13 @@ var Application = function() {
                 Geo.startWatch(reorderSteps, displayWarning);
 
                 function reorderSteps(currentLatlng) {
-                    var count = 0;
+                    var foundDistance = 0;
                     $(withLocalityStepTRs).each(function(index) {
                         var self = this;
                         Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
                             $(self).dataset('distance', result.km);
-                            if (++count == $(withLocalityStepTRs).length) _reorder();
+                            if (++foundDistance == $(withLocalityStepTRs).length) _reorder();
                         });
-
                     });
 
                     function toGoogleLatlng(stepEle) {
@@ -283,20 +282,24 @@ var Application = function() {
                         } else if ('Distance' == currentSortOption) {
                             sortBy('distance');
                         } else {
-                            var vertexes = new Array();
-                            vertexes.push({latlng: currentLatlng});
-                            $(withLocalityStepTRs).each(function() {
-                                vertexes.push({stepEle: this, latlng: toGoogleLatlng(this)});
-                            });
+                            var localityVertexes = function() {
+                                var vertexes = new Array();
+                                vertexes.push({latlng: currentLatlng});
+                                $(withLocalityStepTRs).each(function() {
+                                    vertexes.push({stepEle: this, latlng: toGoogleLatlng(this)});
+                                });
+                                return vertexes;
+                            }
+
+                            var vertexes = localityVertexes();
+
                             var graph = new Graph(vertexes.length);
 
-                            var count = 0;
-                            var maxVertexNum = (vertexes.length * (vertexes.length - 1)) / 2;
-
+                            var foundArc = 0;
                             var setDistance = function(graph, vertexes, i, j, callback) {
                                 Geo.distance({origin: vertexes[i].latlng, destination: vertexes[j].latlng, travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
                                     graph.val(i, j, result.km);
-                                    if (++count == maxVertexNum) {
+                                    if (++foundArc == graph.maxArcs()) {
                                         callback(graph, vertexes);
                                     }
                                 });
