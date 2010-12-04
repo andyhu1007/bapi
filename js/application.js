@@ -16,6 +16,7 @@ var Application = function() {
         this.importerBox = this.importer + " #import";
 
         this.stepsSection = "article#main #footprints";
+        this.totalDesc = this.stepsSection + " #totalDesc"
         this.stepTB = this.stepsSection + " table";
         this.stepTRs = this.stepTB + " tr";
         this.withLocalityStepTRs = this.stepTB + " tr[data-step-locality!='']";
@@ -81,6 +82,7 @@ var Application = function() {
 
                     StepsController.index("<tr></tr>", function(stepEles) {
                         $(stepTB).html("");
+                        $(totalDesc).html("");
                         $.each(stepEles, function() {
                             _render(this).appendTo($(stepTB));
                         });
@@ -269,7 +271,7 @@ var Application = function() {
                             var count = 0;
                             var getDistance = function(graph, vertexes, i, j, callback) {
                                 Geo.distance({origin: vertexes[i].latlng, destination: vertexes[j].latlng, travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
-                                    graph.val(i, j, result.km);
+                                    graph.val(i, j, result);
                                     if (i == 0) $(vertexes.stepEle).dataset('distance', result.km);
                                     if (++count == graph.maxArcs()) callback(graph, vertexes);
                                 });
@@ -277,7 +279,7 @@ var Application = function() {
 
                             for (var i = 0; i < vertexes.length; i++) {
                                 for (var j = i; j < vertexes.length; j++) {
-                                    if (i == j) graph.val(i, j, 0);
+                                    if (i == j) graph.val(i, j, {km: 0, hr: 0});
                                     else getDistance(graph, vertexes, i, j, callback);
                                 }
                             }
@@ -295,30 +297,35 @@ var Application = function() {
                         var sortByRoute = function(graph, vertexes) {
                             var sortByNearestNeighbour = function(graph, vertexes) {
                                 var start = 0;
-                                var result = new Array();
+                                var routes = new Array();
+                                var distance = 0;
+                                var time = 0;
                                 while (true) {
-                                    var min = 99999;
+                                    var min = {km: 99999, hr: 0};
                                     vertexes[start].visited = 1;
                                     var nextStep = start;
                                     for (var i = 0; i < vertexes.length; i++) {
                                         if (!isBlank(vertexes[i].visited)) continue;
-                                        if (min > graph.val(Math.min(start, i), Math.max(start, i))) {
+                                        if (min.km > graph.val(Math.min(start, i), Math.max(start, i)).km) {
                                             nextStep = i;
                                             min = graph.val(Math.min(start, i), Math.max(start, i));
                                         }
                                     }
                                     if (nextStep == start) break;
-                                    result.push(vertexes[nextStep].stepEle);
+                                    distance += min.km;
+                                    time += min.hr;
+                                    routes.push(vertexes[nextStep].stepEle);
                                     start = nextStep;
                                 }
-                                return result;
+                                return {distance: distance, time: time, routes: routes};
                             }
 
-                            var visitSequence = sortByNearestNeighbour(graph, vertexes);
-                            for (var k = visitSequence.length - 1; k >= 0; k--) {
-                                $(visitSequence[k]).prependTo($(stepTB));
+                            var route = sortByNearestNeighbour(graph, vertexes);
+                            for (var k = route.routes.length - 1; k >= 0; k--) {
+                                $(route.routes[k]).prependTo($(stepTB));
                             }
 
+                            setTotalDesc("Distance:" + roundNumber(route.distance, 2) + "km Time: " + roundNumber(route.time, 2) + "hr");
                             highlight();
                         }
 
@@ -338,10 +345,12 @@ var Application = function() {
 
                         var sortByPriority = function() {
                             sortBy('step-seq');
+                            setTotalDesc("");
                             highlight();
                         }
                         var sortByDistance = function() {
                             sortBy('distance');
+                            setTotalDesc("");
                             highlight();
                         }
 
@@ -373,6 +382,9 @@ var Application = function() {
                         return new google.maps.LatLng($(stepEle).dataset('step-lat'), $(stepEle).dataset('step-lng'));
                     }
 
+                    function setTotalDesc(desc) {
+                        $(totalDesc).text(desc);
+                    }
                     function highlight(distance) {
                         $(stepTRs).each(function() {
                             var self = this;

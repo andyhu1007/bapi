@@ -105,12 +105,12 @@ var Geo = {
         self.routeService(directionsRequest, function(directionsResult) {
             if(directionsResult.routes.length == 0) return;
             var legs = directionsResult.routes[0].legs;
-            var result = {km: 0, minutes: 0};
+            var result = {km: 0, hr: 0};
             $.each(legs, function() {
                 result.km += this.distance.value / 1000;
-                result.minutes += this.duration.value / 60;
+                result.hr += this.duration.value / 60 / 60;
             });
-            callback(result);
+            callback({km: roundNumber(result.km, 2), hr: roundNumber(result.hr, 2)});
         }, errCallback);
     },
 

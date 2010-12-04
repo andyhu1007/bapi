@@ -5,3 +5,7 @@ var isBlank = function(object) {
         return object == undefined || object == null;
     }
 }
+
+var roundNumber = function(num, dec) {
+    return Math.round(num * Math.pow(10, dec)) / Math.pow(10, dec);
+}
