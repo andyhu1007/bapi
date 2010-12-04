@@ -262,7 +262,6 @@ var Application = function() {
                 Geo.startWatch(reorderSteps, displayWarning);
 
                 function reorderSteps(currentLatlng) {
-
                     var count = 0;
                     $(withLocalityStepTRs).each(function(index) {
                         var self = this;
@@ -271,12 +270,6 @@ var Application = function() {
                             if (++count == $(withLocalityStepTRs).length) _reorder();
                         });
 
-                        function allGetDistance() {
-                            for (var i = 0; i < $(withLocalityStepTRs).length; i++) {
-                                if (isBlank($($(withLocalityStepTRs)[i]).dataset('distance'))) return false;
-                            }
-                            return true;
-                        }
                     });
 
                     function toGoogleLatlng(stepEle) {
@@ -291,15 +284,27 @@ var Application = function() {
                             sortBy('distance');
                         } else {
                             var vertexes = new Array();
-                            vertexes.push(currentLatlng);
+                            vertexes.push({latlng: currentLatlng});
                             $(withLocalityStepTRs).each(function() {
-                                vertexes.push(toGoogleLatlng(this));
+                                vertexes.push({stepEle: this, latlng: toGoogleLatlng(this)});
                             });
                             var graph = new Graph(vertexes.length);
 
+                            var count = 0;
+                            var maxVertexNum = (vertexes.length * (vertexes.length - 1)) / 2;
+
+                            var visitSequence = null;
                             var setDistance = function(graph, vertexes, i, j) {
-                                Geo.distance({origin: vertexes[i], destination: vertexes[j], travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
+                                Geo.distance({origin: vertexes[i].latlng, destination: vertexes[j].latlng, travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
                                     graph.val(i, j, result.km);
+                                    if (++count == maxVertexNum) {
+                                        visitSequence = tsp(graph, vertexes);
+                                        if (!isBlank(visitSequence)) {
+                                            for(var k = visitSequence.length - 1; k >= 0; k--) {
+                                                $(visitSequence[k]).prependTo($(stepTB));
+                                            }
+                                        }
+                                    }
                                 });
                             }
 
@@ -309,6 +314,32 @@ var Application = function() {
                                     else setDistance(graph, vertexes, i, j);
                                 }
                             }
+
+                            function tsp(graph, vertexes) {
+                                var start = 0;
+                                var result = new Array();
+                                while (true) {
+                                    var min = 10000;
+                                    vertexes[start].visited = 1;
+                                    var nextStep = start;
+                                    for (var i = 0; i < vertexes.length; i++) {
+                                        if (isBlank(vertexes[i].visited)) {
+                                            if (start > i && min > graph.val(i, start)) {
+                                                nextStep = i;
+                                                min = graph.val(i, start);
+                                            } else if (start < i && min > graph.val(start, i)) {
+                                                nextStep = i;
+                                                min = graph.val(start, i);
+                                            }
+                                        }
+                                    }
+                                    if (nextStep == start) break;
+                                    result.push(vertexes[nextStep].stepEle);
+                                    start = nextStep;
+                                }
+                                return result;
+                            }
+
                         }
 
                         highlight(5);
@@ -334,7 +365,7 @@ var Application = function() {
                                     var currentStepVal = $(currentStepTR).dataset(dataAttribute);
                                     var nextStepVal = $(nextStepTR).dataset(dataAttribute);
                                     if (isBlank(nextStepVal)) continue;
-                                    if (isBlank(currentStepVal) || parseInt(currentStepVal) > parseInt(nextStepVal)) {
+                                    if (isBlank(currentStepVal) || parseFloat(currentStepVal) > parseFloat(nextStepVal)) {
                                         $(nextStepTR).insertBefore($(currentStepTR));
                                     }
                                 }
