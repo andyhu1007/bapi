@@ -263,31 +263,25 @@ var Application = function() {
 
                 function reorderSteps(currentLatlng) {
                     var currentSortOption = $(selectedSortOption).text();
-                    if ('Priority' == currentSortOption) {
-                        var foundDistance = 0;
-                        $(withLocalityStepTRs).each(function() {
-                            var self = this;
-                            Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
-                                $(self).dataset('distance', result.km);
-                                if (++foundDistance == $(withLocalityStepTRs).length) {
-                                    sortBy('step-seq');
-                                    highlight(5);
+                    if ('Route' == currentSortOption) {
+                        var generateGraphDistances = function(vertexes, callback) {
+                            var graph = new Graph(vertexes.length);
+                            var count = 0;
+                            var getDistance = function(graph, vertexes, i, j, callback) {
+                                Geo.distance({origin: vertexes[i].latlng, destination: vertexes[j].latlng, travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
+                                    graph.val(i, j, result.km);
+                                    if (i == 0) $(vertexes.stepEle).dataset('distance', result.km);
+                                    if (++count == graph.maxArcs()) callback(graph, vertexes);
+                                });
+                            }
+
+                            for (var i = 0; i < vertexes.length; i++) {
+                                for (var j = i; j < vertexes.length; j++) {
+                                    if (i == j) graph.val(i, j, 0);
+                                    else getDistance(graph, vertexes, i, j, callback);
                                 }
-                            });
-                        });
-                    } else if ('Distance' == currentSortOption) {
-                        var foundDistance = 0;
-                        $(withLocalityStepTRs).each(function() {
-                            var self = this;
-                            Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
-                                $(self).dataset('distance', result.km);
-                                if (++foundDistance == $(withLocalityStepTRs).length) {
-                                    sortBy('distance');
-                                    highlight(5);
-                                }
-                            });
-                        });
-                    } else {
+                            }
+                        }
 
                         var localityVertexes = function() {
                             var vertexes = new Array();
@@ -298,45 +292,19 @@ var Application = function() {
                             return vertexes;
                         }
 
-                        var vertexes = localityVertexes();
-
-                        var graph = new Graph(vertexes.length);
-
-                        var foundArc = 0;
-                        var setDistance = function(graph, vertexes, i, j, callback) {
-                            Geo.distance({origin: vertexes[i].latlng, destination: vertexes[j].latlng, travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
-                                graph.val(i, j, result.km);
-                                if (++foundArc == graph.maxArcs()) {
-                                    callback(graph, vertexes);
-                                    highlight(5);
-                                }
-                            });
-                        }
-
-                        for (var i = 0; i < vertexes.length; i++) {
-                            for (var j = i; j < vertexes.length; j++) {
-                                if (i == j) graph.val(i, j, 0);
-                                else setDistance(graph, vertexes, i, j, sortByRoute);
-                            }
-                        }
-
-                        function sortByRoute(graph, vertexes) {
+                        var sortByRoute = function(graph, vertexes) {
                             var sortByNearestNeighbour = function(graph, vertexes) {
                                 var start = 0;
                                 var result = new Array();
                                 while (true) {
-                                    var min = 10000;
+                                    var min = 99999;
                                     vertexes[start].visited = 1;
                                     var nextStep = start;
                                     for (var i = 0; i < vertexes.length; i++) {
-                                        if (isBlank(vertexes[i].visited)) {
-                                            if (start > i && min > graph.val(i, start)) {
-                                                nextStep = i;
-                                                min = graph.val(i, start);
-                                            } else if (start < i && min > graph.val(start, i)) {
-                                                nextStep = i;
-                                                min = graph.val(start, i);
-                                            }
+                                        if (!isBlank(vertexes[i].visited)) continue;
+                                        if (min > graph.val(Math.min(start, i), Math.max(start, i))) {
+                                            nextStep = i;
+                                            min = graph.val(Math.min(start, i), Math.max(start, i));
                                         }
                                     }
                                     if (nextStep == start) break;
@@ -351,6 +319,52 @@ var Application = function() {
                                 $(visitSequence[k]).prependTo($(stepTB));
                             }
 
+                            highlight();
+                        }
+
+                        generateGraphDistances(localityVertexes(), sortByRoute);
+                    } else {
+                        var generateDistances = function(callback) {
+                            var count = 0;
+                            var steps = $(withLocalityStepTRs).length;
+                            $(withLocalityStepTRs).each(function() {
+                                var self = this;
+                                Geo.distance({origin: currentLatlng, destination: toGoogleLatlng(self), travelMode: google.maps.DirectionsTravelMode.DRIVING}, function(result) {
+                                    $(self).dataset('distance', result.km);
+                                    if (++count == steps) callback();
+                                });
+                            });
+                        }
+
+                        var sortByPriority = function() {
+                            sortBy('step-seq');
+                            highlight();
+                        }
+                        var sortByDistance = function() {
+                            sortBy('distance');
+                            highlight();
+                        }
+
+                        var sortBy = function(dataAttribute) {
+                            var stepLength = $(stepTRs).length;
+                            for (var i = 0; i < stepLength; i++) {
+                                for (var j = 0; j < stepLength - i - 1; j++) {
+                                    var currentStepTR = $(stepTRs)[j];
+                                    var nextStepTR = $(stepTRs)[j + 1];
+                                    var currentStepVal = $(currentStepTR).dataset(dataAttribute);
+                                    var nextStepVal = $(nextStepTR).dataset(dataAttribute);
+                                    if (isBlank(nextStepVal)) continue;
+                                    if (isBlank(currentStepVal) || parseFloat(currentStepVal) > parseFloat(nextStepVal)) {
+                                        $(nextStepTR).insertBefore($(currentStepTR));
+                                    }
+                                }
+                            }
+                        }
+
+                        if ('Priority' == currentSortOption) {
+                            generateDistances(sortByPriority);
+                        } else if ('Distance' == currentSortOption) {
+                            generateDistances(sortByDistance);
                         }
                     }
 
@@ -363,28 +377,12 @@ var Application = function() {
                         $(stepTRs).each(function() {
                             var self = this;
                             var distanceInKm = $(self).dataset('distance');
-                            if (!isBlank(distanceInKm) && distanceInKm < distance) {
+                            if (!isBlank(distanceInKm) && distanceInKm < 5) {
                                 $(self).find('address').addClass('hl');
                             } else {
                                 $(self).find('address').removeClass('hl');
                             }
                         });
-                    }
-
-                    function sortBy(dataAttribute) {
-                        var stepLength = $(stepTRs).length;
-                        for (var i = 0; i < stepLength; i++) {
-                            for (var j = 0; j < stepLength - i - 1; j++) {
-                                var currentStepTR = $(stepTRs)[j];
-                                var nextStepTR = $(stepTRs)[j + 1];
-                                var currentStepVal = $(currentStepTR).dataset(dataAttribute);
-                                var nextStepVal = $(nextStepTR).dataset(dataAttribute);
-                                if (isBlank(nextStepVal)) continue;
-                                if (isBlank(currentStepVal) || parseFloat(currentStepVal) > parseFloat(nextStepVal)) {
-                                    $(nextStepTR).insertBefore($(currentStepTR));
-                                }
-                            }
-                        }
                     }
                 }
             })();
