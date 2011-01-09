@@ -9,7 +9,7 @@ Source code: https://github.com/andyhu1007/bapi
 Features: 
 
 1. CRUD (create, read, update, delete) tasks; disable: single click on the task row.
-3. Order by Priority, Distance or Route
+2. Order by Priority, Distance or Route
 
    Priority: order by drag and drop
    Distance: the distance from your current position to destination
