@@ -1,0 +1,38 @@
+Name: Footprint (Fully tested in google Chrome browser)
+
+Brief Description: a Location Based TODO list, use to arrange your daily/weekly/monthly travel. It can help to find the shortest route for you.   
+
+Live site: http://fp.huzhenbo.name
+
+Source code: https://github.com/andyhu1007/bapi
+
+Features: 
+
+1. CRUD (create, read, update, delete) tasks; disable: single click on the task row.
+3. Order by Priority, Distance or Route
+
+   Priority: order by drag and drop
+   Distance: the distance from your current position to destination
+   Route: a shortest route including all the destinations which start from current position  (TSP: http://en.wikipedia.org/wiki/Travelling_salesman_problem)
+
+
+-----------------------------------------------------------------------------------------------------
+
+How to setup:
+
+Method 1: Download and drop it into a WebServer.
+
+Method 2: Download and run "node runserver.js". Dependency: http://nodejs.org/
+
+Technique Points:
+
+This product is mostly an experiment of HTML5 features, like Geo Location, Local DB, File API, CSS3, etc. It also includes a simple web server implemented by node.js.
+
+Besides above, below are some JavaScript practices involved during the development:
+
+1. active_record.js: an Ruby on Rails ActiveRecord imitation for local DB.
+2. geo.js: an wrapper of Geo Location, also an adapter for google map API.
+3. data_attr_mapper.js: an mapper between a JavaScript object and a html element which filled with data attributes.
+4. steps_controller.js: an connector between view and active record object.
+5. application.js: separation and aggregation of CRUD operations.
+5. data flow: database record <--> active record object <--> html element <--> html renderer.

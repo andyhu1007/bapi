@@ -483,8 +483,8 @@ var Application = function() {
     }
 
     return {init: init};
-};
+}();
 
 $(function() {
-    Application().init();
+    Application.init();
 });
